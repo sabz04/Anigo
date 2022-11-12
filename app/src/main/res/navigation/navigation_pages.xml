@@ -14,7 +14,11 @@
         android:id="@+id/searchFragment"
         android:name="com.example.anigo.SearchFragment"
         android:label="fragment_search"
-        tools:layout="@layout/fragment_search" />
+        tools:layout="@layout/fragment_search" >
+        <action
+            android:id="@+id/action_searchFragment_to_fragmentAnime"
+            app:destination="@id/fragmentAnime" />
+    </fragment>
     <fragment
         android:id="@+id/fragmentAccount"
         android:name="com.example.anigo.FragmentAccount"
@@ -25,4 +29,9 @@
         android:name="com.example.anigo.FragmentLiked"
         android:label="fragment_liked"
         tools:layout="@layout/fragment_liked" />
+    <fragment
+        android:id="@+id/fragmentAnime"
+        android:name="com.example.anigo.FragmentAnime"
+        android:label="fragment_anime"
+        tools:layout="@layout/fragment_anime" />
 </navigation>

@@ -5,20 +5,25 @@
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+
     android:gravity="left"
     android:layout_marginLeft="10dp">
     <androidx.cardview.widget.CardView
+        android:layout_gravity="center"
         android:layout_width="107dp"
         android:layout_margin="10dp"
         android:layout_height="150dp"
 
         android:id="@+id/view2"
         app:cardCornerRadius="10dp"
+
         android:layout_centerHorizontal="true"
         android:background="@android:color/transparent"
         android:shape="rectangle"
         android:thicknessRatio="1.9">
         <ImageView
+
+            android:layout_gravity="center"
             android:scaleType="fitXY"
             android:adjustViewBounds="true"
             android:id="@+id/item_image"
@@ -39,6 +44,14 @@
             android:textStyle="bold"
             android:textColor="@color/black"
             android:text="Ковбой бибоп"
+            android:layout_height="wrap_content"></TextView>
+        <TextView
+
+            android:id="@+id/item_score_type"
+            android:textSize="13dp"
+            android:drawableLeft="@drawable/ic_baseline_star_24"
+            android:drawablePadding="3dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"></TextView>
         <TextView
 
