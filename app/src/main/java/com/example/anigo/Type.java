@@ -6,4 +6,6 @@ public class Type implements Serializable {
     public  int id;
     public  String name;
 
+
+
 }

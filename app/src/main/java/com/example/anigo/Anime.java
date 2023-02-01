@@ -18,13 +18,13 @@ public class Anime  implements Serializable {
 
     public boolean ongoing;
 
-    public Date nexEpisodeAt;
+    public Date nextEpisodeAt;
 
     public int shikiId;
 
-    public Date airedOn;
+    /*public Date AiredOn;*/
 
-    public  int franchiseId;
+    public  int franchizeId;
 
     public  int typeId;
 
@@ -34,12 +34,15 @@ public class Anime  implements Serializable {
 
     public Date releasedOn;
 
-    public Franchise franchise;
+    public com.example.anigo.Franchize franchize;
 
     public Type type;
 
     public Image[] images;
 
+    /*public Image[] images;*/
     public Japanese[] japaneses;
+
+   /* public Japanese[] japaneses;*/
 
 }

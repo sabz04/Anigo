@@ -1,17 +1,26 @@
 package com.example.anigo;
 
+import static android.content.ContentValues.TAG;
+
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Parcelable;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
+import android.view.DragEvent;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -37,6 +46,7 @@ import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
@@ -49,10 +59,28 @@ import okhttp3.Response;
 
 
 
-public class SearchFragment extends Fragment {
+public class SearchFragment extends Fragment implements SearchFragmentContract.View {
+
+    SearchFragmentContract.Presenter presenter;
+    Parcelable state;
+    SearchFragment searchFragment;
+
+    ArrayList<Anime>  animes_pagination = new ArrayList<>();
+
+    int last_seen_elem = -1;
+    int current_page = 1;
+
+    EditText editText_search;
+
+    Button download_data_btn;
+
+    SwipeRefreshLayout swp;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+
+    private View current_view;
+
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
     private  Runnable RunnableRefreshListener = null;
@@ -83,30 +111,96 @@ public class SearchFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            savedInstanceState = savedInstanceState.getBundle("FRAGMENT_SEARCH");
+            Log.d("bundle_check: ",savedInstanceState.getString("Key_string"));
+        }
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
+
         }
 
     }
 
     @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        /*if (savedInstanceState != null) {
+            savedInstanceState = savedInstanceState.getBundle("FRAGMENT_SEARCH");
+            *//*savedInstanceState.getBundle("FRAGMENT_SEARCH");*//*
+            Log.d("bundle_check: ",savedInstanceState.getString("Key_string"));
+        }*/
+    }
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putBundle("FRAGMENT_SEARCH", outState);
+        outState.putString("Key_string", "it is key from the saved bundle!");
+        outState.putBundle("FRAGMENT_SEARCH",outState);
+
+    }
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view;
-        if(MainActivity.view == null){
-             view = inflater.inflate(R.layout.fragment_search, container, false);
-        }
-        else{
-            view = MainActivity.view;
-        }
-        EditText editText_search = (EditText) view.findViewById(R.id.edit_search);
-        SwipeRefreshLayout swp = (SwipeRefreshLayout) view.findViewById(R.id.swiperefresh);
+
+        view = NavigationActivity.search_fragment_instance;
+        if(view == null)
+            view = inflater.inflate(R.layout.fragment_search, container, false);
+        // save the view to parent activity
+
+        NavigationActivity.search_fragment_instance = view;
+
+        current_view = view;
+        editText_search = (EditText) view.findViewById(R.id.edit_search);
+
+        swp = (SwipeRefreshLayout) view.findViewById(R.id.swiperefresh);
+
+        presenter = new SearchFragmentPresenter(this);
 
         swp.setColorSchemeResources(R.color.nicered);
+
+
+        editText_search.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int actionId, KeyEvent event) {
+                System.out.println(actionId);
+                if (actionId == EditorInfo.IME_ACTION_SEARCH
+                        || actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
+
+                        ClearPaginationConfig();
+                        swp.setRefreshing(true);
+                        state=null;
+                        presenter.Search(editText_search.getText().toString(), current_page);
+
+
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        swp.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                ClearPaginationConfig();
+                swp.setRefreshing(true);
+                presenter.Search(editText_search.getText().toString(), current_page);
+            }
+        });
+
+
+
+
+
+
+
+
       
-        String search ="";
+        /*String search ="";
         TextView tViewSearch = view.findViewById(R.id.edit_search);
         tViewSearch.addTextChangedListener(new TextWatcher() {
             @Override
@@ -213,10 +307,116 @@ public class SearchFragment extends Fragment {
                 RunnableRefreshListener.run();
             }
         });
+*/
 
-        MainActivity.view = view; //кэширование?
+
+
         return view;
     }
-    
+    public void ClearPaginationConfig(){
+        animes_pagination.clear();
+        current_page=1;
+    }
 
+    @Override
+    public void onSuccess(String message, Anime[] animes, int currentpage, int pagecount) {
+        //временно, потом придется current_page перенести в свайпрефреш событие
+        Context context = current_view.getContext();
+
+        current_page = currentpage+1;
+
+        if (currentpage >= pagecount){
+            swp.setRefreshing(false);
+            return;
+        }
+
+        for (Anime item:animes) {
+            animes_pagination.add(item);
+        }
+
+
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+
+                GridView grd = (GridView) current_view.findViewById(R.id.gridView);
+                state = grd.onSaveInstanceState();
+                grd.setOnScrollListener(new AbsListView.OnScrollListener() {
+                    @Override
+                    public void onScrollStateChanged(AbsListView absListView, int i) {
+
+                    }
+
+                    @Override
+                    public void onScroll(AbsListView absListView, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+
+                        int last_seen = grd.getLastVisiblePosition();
+
+                        if(last_seen == last_seen_elem)
+                            return;
+
+                        if (last_seen >= totalItemCount-1){
+                            swp.setRefreshing(true);
+                            presenter.Search(editText_search.getText().toString(), current_page);;
+                            last_seen_elem = last_seen;
+                        }
+
+                    }
+                });
+
+                Anime[] anime_array = new Anime[animes_pagination.size()];
+
+                GridAdapter gridAdapter = new GridAdapter(SearchFragment.this.getContext(), animes_pagination.toArray(anime_array) );
+
+
+                grd.setAdapter(gridAdapter);
+
+                if(state != null) {
+                    Log.d(TAG, "trying to restore listview state");
+                    grd.onRestoreInstanceState(state);
+                }
+                swp.setRefreshing(false);
+
+            }
+        });
+    }
+
+    @Override
+    public void onSuccess(String message) {
+        Context context = current_view.getContext();
+
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+            }
+        });
+
+
+    }
+
+    @Override
+    public void onError(String message, String body) {
+        Context context = current_view.getContext();
+
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    @Override
+    public void onError(String message) {
+        Context context = current_view.getContext();
+
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
 }

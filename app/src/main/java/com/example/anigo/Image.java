@@ -7,4 +7,6 @@ public class Image implements Serializable {
     public String original;
     public String preview;
 
+    public int animeId;
+
 }

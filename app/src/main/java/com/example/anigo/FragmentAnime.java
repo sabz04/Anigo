@@ -86,10 +86,10 @@ public class FragmentAnime extends Fragment {
         score_txt.setText(String.valueOf( value.scoreShiki));
 
 
-        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Europe/Paris"));
-        cal.setTime(value.airedOn);
+        /*Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Europe/Paris"));
+        cal.setTime(value.Aire);*/
 
-        date_txt.setText(String.valueOf(cal.get(Calendar.YEAR)) + " г.");
+//        date_txt.setText(String.valueOf(cal.get(Calendar.YEAR)) + " г.");
         String type="Неизвестен";
         if(value.type != null) {
 

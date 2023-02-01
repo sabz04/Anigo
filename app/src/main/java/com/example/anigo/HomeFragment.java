@@ -62,20 +62,7 @@ public class HomeFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view =inflater.inflate(R.layout.fragment_home, container, false);
 
-        SwipeRefreshLayout swp = (SwipeRefreshLayout) view.findViewById(R.id.swiperefresh);
 
-        swp.setColorSchemeResources(R.color.nicered);
-
-
-        GridView grd = (GridView) view.findViewById(R.id.gridView);
-
-        String[] names = {"Ковбой бибоп", "Ковбой бибоп", "Ковбой бибоп", "Ковбой бибоп"};
-
-        int[] ids = {R.drawable.test, R.drawable.test, R.drawable.test, R.drawable.test};
-
-        /*GridAdapter gridAdapter = new GridAdapter(HomeFragment.this.getContext(), names,names,ids);
-        grd.setAdapter(gridAdapter);*/
-        // Inflate the layout for this fragment
         return view;
     }
 }

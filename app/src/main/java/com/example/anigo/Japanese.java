@@ -6,5 +6,5 @@ public class Japanese implements Serializable {
 
     public  int id;
     public  String name;
-    public int animId;
+    public int animeId;
 }

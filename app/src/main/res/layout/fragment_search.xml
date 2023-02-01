@@ -34,23 +34,27 @@
                 android:shadowRadius="10"
                 android:textSize="18dp" />
 
-                <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-                    xmlns:android="http://schemas.android.com/apk/res/android"
-                    android:id="@+id/swiperefresh"
-                    android:foregroundTint="@color/nicered"
+                    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                        xmlns:android="http://schemas.android.com/apk/res/android"
+                        android:id="@+id/swiperefresh"
+                        android:foregroundTint="@color/nicered"
 
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-                    <GridView
-
-                        android:id="@+id/gridView"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
+                        <GridView
 
-                    </GridView>
+                            android:id="@+id/gridView"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+
+                        </GridView>
 
 
-                </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+                    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+
+
+
 
 
 

@@ -59,8 +59,9 @@ public class ClientClass {
 
                 GsonBuilder builder = new GsonBuilder();
                 Gson gson = builder.registerTypeAdapter(Date.class, new DateDeserializer()).create();
-                Anime[] anime = gson.fromJson(resp, Anime[].class);
-                animes = anime;
+                AnimeResponse response_animes = gson.fromJson(resp, AnimeResponse.class);
+
+
 
                 mainHandler.post(runnable);
 
