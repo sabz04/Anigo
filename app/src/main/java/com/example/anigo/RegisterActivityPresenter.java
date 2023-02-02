@@ -12,40 +12,64 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class RegisterActivityPresenter implements RegisterActivityContract.Presenter, OkHttpContract.Presenter{
+public class RegisterActivityPresenter implements RegisterActivityContract.Presenter{
+
     RegisterActivityContract.View view;
 
-    OkHttpUserHelper presenter;
+    FeedUserDbHelper db_helper;
+
+    OkHttpClient client;
+
+    String login = "";
+
+    String password = "";
+
+    Gson gson;
+
 
     public RegisterActivityPresenter(RegisterActivityContract.View view){
         this.view = view;
+        gson = new Gson();
+        client = new OkHttpClient();
     }
     @Override
     public void Register(String password, String login, String Email, int RoleId) {
 
+        UserLoginRegisterClass reg_user = new UserLoginRegisterClass(login, password, Email, RoleId);
+        //converting to json
+        String json = new Gson().toJson(reg_user);
 
-        presenter = new OkHttpUserHelper(this);
+        RequestBody formBody = RequestBody.create(
+                MediaType.parse("application/json"), json);
+        Request request = new Request.Builder()
 
-        presenter.SendPostRegister(login, password, Email, RoleId);
+                .url(RequestOptions.request_url_register)
+                .post(formBody)
+                .build();
+        Call call = client.newCall(request);
+
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                view.onError(e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String json_body = response.body().string();
+                if(response.code() == 201 || response.code() == 200){
+
+
+                    UserLoginAuthClass user = gson.fromJson(json_body, UserLoginAuthClass.class);
+                     view.onSuccess(json_body);
+
+                }
+                else {
+                    view.onError("error " + json_body);
+                }
+
+            }
+        });
     }
 
-    @Override
-    public void OnSuccess(String message) {
-        view.onSuccess(message);
-    }
-
-    @Override
-    public void OnSuccess(String message, Anime[] animes, int current_page, int pages_count) {
-
-    }
-
-    @Override
-    public void OnError(String message) {
-        view.onSuccess(message);
-    }
-
-    @Override
-    public void OnSuccess(Anime anime) {
-
-    }
 }

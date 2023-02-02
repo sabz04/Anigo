@@ -7,37 +7,32 @@ import android.hardware.HardwareBuffer;
 import android.os.Bundle;
 import android.os.Handler;
 
-public class StartAcitivity extends AppCompatActivity {
+public class StartAcitivity extends AppCompatActivity implements AuthentificationInterface.Listener{
 
     private Intent intent;
+
+    private Authentification auth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start_acitivity);
 
+        auth = new Authentification(this, getApplicationContext());
 
-        Handler hnd = new Handler();
+        auth.Auth();
 
-        hnd.post(new Runnable() {
-            @Override
-            public void run() {
-                FeedUserDbHelper db = new FeedUserDbHelper(getApplicationContext());
+    }
 
+    @Override
+    public void AuthSuccess(String message) {
+        intent = new Intent(StartAcitivity.this, NavigationActivity.class);
+        startActivity(intent);
+    }
 
-                FeedUserLocal user_local = db.CheckIfExist();
-
-
-
-                if(user_local == null)
-                    intent = new Intent(StartAcitivity.this, MainActivity.class);
-                else
-                    intent = new Intent(StartAcitivity.this, NavigationActivity.class);
-
-                startActivity(intent);
-                finish();
-            }
-        });
-
+    @Override
+    public void AuthError(String message) {
+        intent = new Intent(StartAcitivity.this, MainActivity.class);
+        startActivity(intent);
     }
 }

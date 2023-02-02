@@ -99,9 +99,7 @@ public class SearchFragmentPresenter implements  SearchFragmentContract.Presente
                     view.onSuccess("Поиск успешен.", response_animes.animes, response_animes.currentPage, response_animes.pages);
                 }
                 else {
-
-
-                    view.onError(response.message());
+                   view.onError(response.message());
                 }
             }
         });
