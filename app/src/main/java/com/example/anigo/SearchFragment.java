@@ -3,6 +3,7 @@ package com.example.anigo;
 import static android.content.ContentValues.TAG;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -343,6 +344,25 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
 
                 GridView grd = (GridView) current_view.findViewById(R.id.gridView);
                 state = grd.onSaveInstanceState();
+
+                grd.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+                        Intent to_anime = new Intent(getActivity(), AnimeActivity.class);
+
+                        Bundle bundle = new Bundle();
+
+                        bundle.putSerializable("current_title", (Serializable) animes[i]);
+
+                        to_anime.putExtras(bundle);
+
+                        startActivity(to_anime);
+
+                        //Toast.makeText(SearchFragment.this.getActivity(), animes[i].nextEpisodeAt.toString(), Toast.LENGTH_LONG).show();
+                    }
+                });
+
                 grd.setOnScrollListener(new AbsListView.OnScrollListener() {
                     @Override
                     public void onScrollStateChanged(AbsListView absListView, int i) {
