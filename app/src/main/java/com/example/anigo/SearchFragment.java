@@ -314,6 +314,7 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
         return view;
     }
     public void ClearPaginationConfig(){
+        last_seen_elem=-1;
         animes_pagination.clear();
         current_page=1;
     }

@@ -20,9 +20,11 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class MainActivityPresenter implements MainActivityContract.Presenter{
+public class MainActivityPresenter implements MainActivityContract.Presenter, OkHttpContract.Presenter{
 
     MainActivityContract.View view;
+
+    OkHttpUserHelper presenter;
 
     String password = "";
     String login = "";
@@ -34,62 +36,24 @@ public class MainActivityPresenter implements MainActivityContract.Presenter{
     @Override
     public void  Login(String pass, String log, Context context) {
 
+        presenter = new OkHttpUserHelper(this, context);
 
-        FeedUserDbHelper db = new FeedUserDbHelper(context);
+        presenter.SendPostLogin(log, pass);
 
-        OkHttpClient client = new OkHttpClient();
+    }
 
-        FeedUserLocal user = db.CheckIfExist();
+    @Override
+    public void OnSuccess(String message) {
+        view.onSuccess(message);
+    }
 
-        if(user != null){
-            this.login = user.Login;
-            this.password = user.Password;
-        }
-        else {
-            this.login = log;
-            this.password = pass;
-        }
+    @Override
+    public void OnSuccess(String message, Anime[] animes, int current_page, int pages_count) {
 
-        UserLoginAuthClass auth_user = new UserLoginAuthClass(password, login);
+    }
 
-        //converting to json
-        String json = new Gson().toJson(auth_user);
-
-        RequestBody formBody = RequestBody.create(
-                MediaType.parse("application/json"), json);
-        Request request = new Request.Builder()
-
-                .url(RequestOptions.request_url_login)
-                .post(formBody)
-                .build();
-        Call call = client.newCall(request);
-
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                view.onError("Ошибка запроса." + e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                if(response.code() == 200){
-                    view.onSuccess("Вход успешен.");
-
-                    db.Create(login, password, response.body().string());
-                    Log.d("user created", "hehe, yes! he is actually added to inner database");
-
-
-                }
-                else {
-                    view.onError("Такой пользователь не найден.", response.body().string());
-
-                }
-            }
-        });
-
-
-
-
-
+    @Override
+    public void OnError(String message) {
+        view.onError(message);
     }
 }

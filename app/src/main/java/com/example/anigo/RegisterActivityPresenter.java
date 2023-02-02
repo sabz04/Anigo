@@ -12,46 +12,35 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class RegisterActivityPresenter implements RegisterActivityContract.Presenter{
+public class RegisterActivityPresenter implements RegisterActivityContract.Presenter, OkHttpContract.Presenter{
     RegisterActivityContract.View view;
+
+    OkHttpUserHelper presenter;
 
     public RegisterActivityPresenter(RegisterActivityContract.View view){
         this.view = view;
     }
     @Override
     public void Register(String password, String login, String Email, int RoleId) {
-        OkHttpClient client = new OkHttpClient();
-
-        UserLoginRegisterClass reg_user = new UserLoginRegisterClass(login, password, Email, RoleId );
-
-        //converting to json
-        String json = new Gson().toJson(reg_user);
-
-        RequestBody formBody = RequestBody.create(
-                MediaType.parse("application/json"),json);
-        Request request = new Request.Builder()
-
-                .url(RequestOptions.request_url_register)
-                .post(formBody)
-                .build();
-        Call call = client.newCall(request);
-
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                view.onError("Ошибка запроса." + e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                if(response.code() == 201)
-                    view.onSuccess("Новый пользователь создан.");
-                else {
-                    view.onError(response.body().string());
-                }
-            }
-        });
 
 
+        presenter = new OkHttpUserHelper(this);
+
+        presenter.SendPostRegister(login, password, Email, RoleId);
+    }
+
+    @Override
+    public void OnSuccess(String message) {
+        view.onSuccess(message);
+    }
+
+    @Override
+    public void OnSuccess(String message, Anime[] animes, int current_page, int pages_count) {
+
+    }
+
+    @Override
+    public void OnError(String message) {
+        view.onSuccess(message);
     }
 }

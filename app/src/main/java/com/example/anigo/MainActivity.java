@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityContr
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
                 Intent i = new Intent(getApplicationContext(),NavigationActivity.class);
                 startActivity(i);
                 finish();
