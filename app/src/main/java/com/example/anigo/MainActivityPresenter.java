@@ -34,6 +34,7 @@ public class MainActivityPresenter implements MainActivityContract.Presenter{
     @Override
     public void  Login(String pass, String log, Context context) {
 
+
         FeedUserDbHelper db = new FeedUserDbHelper(context);
 
         OkHttpClient client = new OkHttpClient();
@@ -43,6 +44,10 @@ public class MainActivityPresenter implements MainActivityContract.Presenter{
         if(user != null){
             this.login = user.Login;
             this.password = user.Password;
+        }
+        else {
+            this.login = log;
+            this.password = pass;
         }
 
         UserLoginAuthClass auth_user = new UserLoginAuthClass(password, login);
@@ -70,13 +75,9 @@ public class MainActivityPresenter implements MainActivityContract.Presenter{
                 if(response.code() == 200){
                     view.onSuccess("Вход успешен.");
 
-                    FeedUserLocal user_local = db.GetUser(login, password);
+                    db.Create(login, password, response.body().string());
+                    Log.d("user created", "hehe, yes! he is actually added to inner database");
 
-                    if(user_local == null){
-                        db.Create(login, password, response.body().string());
-                        Log.d("user created", "hehe, yes! he is actually added to inner database");
-                    }
-                    Log.d("user already exist", "hehe, yes! he is actually in the database");
 
                 }
                 else {

@@ -45,13 +45,13 @@ public class MainActivity extends AppCompatActivity implements MainActivityContr
 
         LinearLayout layout = (LinearLayout) findViewById(R.id.log_layout);
 
-        layout.setVisibility(View.INVISIBLE);
+
 
         System.out.println(login_tb.getText().toString());
 
         presenter = new MainActivityPresenter(this);
 
-        presenter.Login(USER_LOGIN_CHECK, USER_PASSWORD_CHECK, this );
+
 
         register_TV.setOnClickListener(new View.OnClickListener() {
             @Override

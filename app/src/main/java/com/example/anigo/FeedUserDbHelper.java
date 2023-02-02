@@ -42,8 +42,39 @@ public class FeedUserDbHelper implements FeedUserDbContract {
     }
 
     @Override
-    public void Delete(String login, String password) {
+    public boolean Delete() {
+        int id = -1;
 
+        SQLiteDatabase db = db_helper.getWritableDatabase();
+
+        Cursor cursor = db.query(TABLE_NAME, new String[] { "*" },
+                null,
+                null, null, null, null, null);
+
+        if(cursor != null)
+        {
+            if (cursor.moveToFirst()) {
+
+                id = cursor.getInt(0);
+                String selection = FeedReaderContract.FeedEntry._ID + " LIKE ?";
+// Specify arguments in placeholder order.
+                String[] selectionArgs = { String.valueOf(id) };
+// Issue SQL statement.
+                int deletedRows = db.delete(FeedReaderContract.FeedEntry.TABLE_NAME, selection, selectionArgs);
+                cursor.close();
+
+            }
+            else {
+                return  false;
+            }
+
+        }
+        else {
+            return false;
+        }
+
+        db.close();
+        return true;
     }
 
     @Override
@@ -68,9 +99,12 @@ public class FeedUserDbHelper implements FeedUserDbContract {
                 login = cursor.getString(1); // login
                 password = cursor.getString(2); // password
                 token = cursor.getString(3); // token
-
+                cursor.close();
             }
-            cursor.close();
+            else {
+                return null;
+            }
+
         }
         else {
             return null;
