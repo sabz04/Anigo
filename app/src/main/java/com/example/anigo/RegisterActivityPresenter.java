@@ -43,4 +43,9 @@ public class RegisterActivityPresenter implements RegisterActivityContract.Prese
     public void OnError(String message) {
         view.onSuccess(message);
     }
+
+    @Override
+    public void OnSuccess(Anime anime) {
+
+    }
 }

@@ -11,43 +11,53 @@ import java.util.Date;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.Credentials;
+import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.internal.http2.Header;
 
 public class OkHttpUserHelper implements OkHttpContract.OkHttpRequest{
 
     public OkHttpContract.Presenter presenter;
 
-    private OkHttpClient client = new OkHttpClient();
+    private OkHttpClient client;
 
     private  FeedUserDbHelper db_helper;
 
     private Gson gson;
 
-
+    Authentification auth;
 
     private Context context;
 
     public  OkHttpUserHelper(OkHttpContract.Presenter presenter, Context context){
+
         this.presenter = presenter;
         this.context = context;
         this.gson = new Gson();
         this.db_helper = new FeedUserDbHelper(context);
-        this.client = new OkHttpClient();
+        this.context = context;
+        FeedUserLocal user = db_helper.CheckIfExist();
+        if(user != null)
+            this.client = new OkHttpClient();
+        else
+            this.client = new OkHttpClient();
     }
-    public  OkHttpUserHelper(OkHttpContract.Presenter presenter){
+    public OkHttpUserHelper(OkHttpContract.Presenter presenter){
         this.presenter = presenter;
         this.gson = new Gson();
         this.db_helper = new FeedUserDbHelper(context);
+        context = MyApp.getContext();
+        FeedUserLocal user = db_helper.CheckIfExist();
         this.client = new OkHttpClient();
     }
 
     @Override
     public void SendPostLogin(String login, String password) {
-
 
         UserLoginAuthClass auth_user = new UserLoginAuthClass(login, password);
         //converting to json
@@ -60,6 +70,7 @@ public class OkHttpUserHelper implements OkHttpContract.OkHttpRequest{
                 .url(RequestOptions.request_url_login)
                 .post(formBody)
                 .build();
+
         Call call = client.newCall(request);
 
         call.enqueue(new Callback() {
@@ -133,14 +144,19 @@ public class OkHttpUserHelper implements OkHttpContract.OkHttpRequest{
 
     @Override
     public void SendGetAnimes(String search, int page) {
-        OkHttpClient client = new OkHttpClient();
 
         //converting to json
+
+        FeedUserLocal user = db_helper.CheckIfExist();
+
         Request request = new Request.Builder()
                 .url(String.format("http://192.168.0.105/api/Anime/GetAnimes?page=%o&search=%s",page, search))
                 .get()
+                .addHeader("Authorization", "Bearer " + user.Token )
                 .build();
         Call call = client.newCall(request);
+
+        /*Log.v("headers", )*/
 
         call.enqueue(new Callback() {
             @Override
@@ -160,7 +176,9 @@ public class OkHttpUserHelper implements OkHttpContract.OkHttpRequest{
                     presenter.OnSuccess("Поиск успешен.", response_animes.animes, response_animes.currentPage, response_animes.pages);
                 }
                 else {
-                    presenter.OnError("Что-то явно пошло не так.");
+
+
+                    presenter.OnError(response.message());
                 }
             }
         });
@@ -168,11 +186,49 @@ public class OkHttpUserHelper implements OkHttpContract.OkHttpRequest{
     }
 
     @Override
-    public void SendGet(String message) {
+    public void SendGetAnime(int id) {
+
+
+        FeedUserLocal user = db_helper.CheckIfExist();
+
+
+        //converting to json
+        Request request = new Request.Builder()
+                .url(String.format("http://192.168.0.105/api/Anime/GetAnime?id=%o", id  ))
+                .get()
+                .addHeader("Authorization", user.Token)
+                .build();
+
+        Call call = client.newCall(request);
+
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                presenter.OnError(e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if(response.code() == 200){
+                    String response_body = response.body().string();
+
+                    GsonBuilder builder = new GsonBuilder();
+                    Gson gson = builder.registerTypeAdapter(Date.class, new DateDeserializer()).create();
+                    Anime anime = gson.fromJson(response_body, Anime.class);
+
+                    presenter.OnSuccess(anime);
+                }
+                else {
+                    presenter.OnError("Что-то явно пошло не так.");
+                }
+            }
+        });
 
     }
 
     public  static String ConvertToJsonByGson(Object obj){
         return new Gson().toJson(obj);
     }
+
+
 }

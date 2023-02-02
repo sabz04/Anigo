@@ -1,5 +1,7 @@
 package com.example.anigo;
 
+import android.content.Context;
+
 public interface SearchFragmentContract {
     interface View {
         void onSuccess(String message, Anime[] animes, int currentpage, int pagecount);
@@ -9,6 +11,6 @@ public interface SearchFragmentContract {
     }
     interface Presenter{
         void Search(String search);
-        void Search(String search, int page);
+        void Search(String search, int page, Context context);
     }
 }

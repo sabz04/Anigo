@@ -56,4 +56,9 @@ public class MainActivityPresenter implements MainActivityContract.Presenter, Ok
     public void OnError(String message) {
         view.onError(message);
     }
+
+    @Override
+    public void OnSuccess(Anime anime) {
+
+    }
 }

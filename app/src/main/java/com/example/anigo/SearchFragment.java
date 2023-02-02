@@ -66,7 +66,7 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
     Parcelable state;
     SearchFragment searchFragment;
 
-    ArrayList<Anime>  animes_pagination = new ArrayList<>();
+    ArrayList<Anime> animes_pagination = new ArrayList<>();
 
     int last_seen_elem = -1;
     int current_page = 1;
@@ -112,10 +112,7 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (savedInstanceState != null) {
-            savedInstanceState = savedInstanceState.getBundle("FRAGMENT_SEARCH");
-            Log.d("bundle_check: ",savedInstanceState.getString("Key_string"));
-        }
+
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
@@ -137,9 +134,7 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        outState.putBundle("FRAGMENT_SEARCH", outState);
-        outState.putString("Key_string", "it is key from the saved bundle!");
-        outState.putBundle("FRAGMENT_SEARCH",outState);
+
 
     }
     @Override
@@ -160,7 +155,7 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
 
         swp = (SwipeRefreshLayout) view.findViewById(R.id.swiperefresh);
 
-        presenter = new SearchFragmentPresenter(this);
+        presenter = new SearchFragmentPresenter(this, getContext());
 
         swp.setColorSchemeResources(R.color.nicered);
 
@@ -175,7 +170,7 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
                         ClearPaginationConfig();
                         swp.setRefreshing(true);
                         state=null;
-                        presenter.Search(editText_search.getText().toString(), current_page);
+                        presenter.Search(editText_search.getText().toString(), current_page, getContext());
 
 
                     return true;
@@ -189,128 +184,9 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
             public void onRefresh() {
                 ClearPaginationConfig();
                 swp.setRefreshing(true);
-                presenter.Search(editText_search.getText().toString(), current_page);
+                presenter.Search(editText_search.getText().toString(), current_page, getContext());
             }
         });
-
-
-
-
-
-
-
-
-      
-        /*String search ="";
-        TextView tViewSearch = view.findViewById(R.id.edit_search);
-        tViewSearch.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                Search = tViewSearch.getText().toString();
-            }
-            @Override
-            public void afterTextChanged(Editable editable) {
-                Search = tViewSearch.getText().toString();
-            }
-        });
-
-
-        tViewSearch.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int actionId, KeyEvent event) {
-                System.out.println(actionId);
-                if (actionId == EditorInfo.IME_ACTION_SEARCH
-                        || actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT
-                        ) {
-                    RunnableRefreshListener.run();
-                    return true;
-                }
-                return false;
-            }
-
-
-
-        });
-
-
-
-
-        RunnableRefreshListener = new Runnable() {
-            @Override
-            public void run() {
-
-                if(Search.equals("")){
-
-                    swp.setRefreshing(false);
-                    return;
-                }
-                swp.setRefreshing(true);
-                String url = "http://192.168.0.106:560/anigo/animes?search="+Search;
-
-                Request request = new Request.Builder()
-                        .url(url)
-                        .build();
-
-                ClientClass clientClass = new ClientClass(request, url);
-                Handler mainHandler = new Handler(view.getContext().getMainLooper());
-                clientClass.setMainHandler(mainHandler);
-
-                Runnable updateRunnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        Anime[] animes = clientClass.ClientGetAnimes();
-                        GridView grd = (GridView) view.findViewById(R.id.gridView);
-
-                        GridAdapter gridAdapter = new GridAdapter(SearchFragment.this.getContext(),animes);
-                        grd.setAdapter(gridAdapter);
-                        swp.setRefreshing(false);
-
-                        grd.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
-                                Bundle bundle = new Bundle();
-
-                                bundle.putSerializable("current_title", (Serializable) animes[i]);
-
-                                Navigation.findNavController(view).navigate(R.id.action_searchFragment_to_fragmentAnime, bundle);
-
-                                Toast.makeText(SearchFragment.this.getActivity(), animes[i].airedOn.toString(), Toast.LENGTH_LONG).show();
-                            }
-                        });
-                    };
-                };
-                clientClass.setOnResponseRunnable(updateRunnable);
-                clientClass.ClientSendRequest();
-
-            }
-        };
-
-
-        if(firstEnter){
-            Search = "Cowboy";
-            RunnableRefreshListener.run();
-            firstEnter = false;
-            Search = "";
-        }
-
-
-
-
-        swp.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                RunnableRefreshListener.run();
-            }
-        });
-*/
-
-
 
         return view;
     }
@@ -349,11 +225,11 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
                     @Override
                     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
-                        Intent to_anime = new Intent(getActivity(), AnimeActivity.class);
+                        Intent to_anime = new Intent( context,AnimeActivity.class);
 
                         Bundle bundle = new Bundle();
 
-                        bundle.putSerializable("current_title", (Serializable) animes[i]);
+                        bundle.putSerializable("current_title", (Serializable) animes_pagination.get(i));
 
                         to_anime.putExtras(bundle);
 
@@ -379,7 +255,7 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
 
                         if (last_seen >= totalItemCount-1){
                             swp.setRefreshing(true);
-                            presenter.Search(editText_search.getText().toString(), current_page);;
+                            presenter.Search(editText_search.getText().toString(), current_page, getContext());;
                             last_seen_elem = last_seen;
                         }
 

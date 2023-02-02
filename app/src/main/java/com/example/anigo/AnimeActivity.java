@@ -1,15 +1,19 @@
 package com.example.anigo;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.KeyEvent;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
-public class AnimeActivity extends AppCompatActivity {
+public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityContract.View{
 
+    private AnimeActivityPresenter presenter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -19,22 +23,19 @@ public class AnimeActivity extends AppCompatActivity {
 
         Anime anime =  (Anime)bundle.getSerializable("current_title");
 
-        TextView title_tv = (TextView) findViewById(R.id.title_name);
+        presenter= new AnimeActivityPresenter(this);
 
-        title_tv.setText(anime.nameRus);
-        Handler hnd = new Handler();
-        hnd.post(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                finish();
-            }
-        });
+        presenter.GetAnime(anime.id);
 
+}
+
+    @Override
+    public void OnSuccess() {
+
+    }
+
+    @Override
+    public void OnError() {
 
     }
 }

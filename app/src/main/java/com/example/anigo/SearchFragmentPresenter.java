@@ -1,5 +1,7 @@
 package com.example.anigo;
 
+import android.content.Context;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -14,13 +16,29 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class SearchFragmentPresenter implements  SearchFragmentContract.Presenter, OkHttpContract.Presenter{
+public class SearchFragmentPresenter implements  SearchFragmentContract.Presenter, AuthentificationInterface.Listener{
 
     SearchFragmentContract.View view;
 
-    OkHttpUserHelper presenter;
+    Authentification authentification;
 
-    public SearchFragmentPresenter(SearchFragmentContract.View view){this.view = view;}
+    FeedUserDbHelper db_helper;
+
+    OkHttpClient client;
+
+    String login = "";
+
+    String password = "";
+
+    String search = "";
+
+    int page = -1;
+
+    public SearchFragmentPresenter(SearchFragmentContract.View view, Context context){
+        this.view = view;
+        this.db_helper = new FeedUserDbHelper(context);
+        client = new OkHttpClient();
+    }
 
     @Override
     public void Search(String search) {
@@ -28,26 +46,71 @@ public class SearchFragmentPresenter implements  SearchFragmentContract.Presente
     }
 
     @Override
-    public void Search(String search, int page) {
+    public void Search(String search, int page, Context context) {
 
-        presenter =new OkHttpUserHelper(this);
+        authentification =new Authentification(this, context);
 
-        presenter.SendGetAnimes(search, page);
+        this.search = search;
+        this.page = page;
+
+
+        authentification.Auth();
 
     }
 
     @Override
-    public void OnSuccess(String message) {
+    public void AuthSuccess(String token) {
+        FeedUserLocal user_local = new FeedUserLocal();
+        if(user_local == null){
+            view.onError("user null");
+            return;
+        }
+        else{
+            this.login = user_local.Login;
+            this.password = user_local.Password;
+        }
+
+        FeedUserLocal user = db_helper.CheckIfExist();
+
+        Request request = new Request.Builder()
+                .url(String.format("http://192.168.0.105/api/Anime/GetAnimes?page=%o&search=%s",page, search))
+                .get()
+                .addHeader("Authorization", "Bearer " + token )
+                .build();
+        Call call = client.newCall(request);
+
+        /*Log.v("headers", )*/
+
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                view.onError(e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if(response.code() == 200){
+                    String response_body = response.body().string();
+
+                    GsonBuilder builder = new GsonBuilder();
+                    Gson gson = builder.registerTypeAdapter(Date.class, new DateDeserializer()).create();
+                    AnimeResponse response_animes = gson.fromJson(response_body, AnimeResponse.class);
+
+                    view.onSuccess("Поиск успешен.", response_animes.animes, response_animes.currentPage, response_animes.pages);
+                }
+                else {
+
+
+                    view.onError(response.message());
+                }
+            }
+        });
+
 
     }
 
     @Override
-    public void OnSuccess(String message, Anime[] animes, int current_page, int pages_count) {
-        view.onSuccess(message, animes, current_page, pages_count);
-    }
-
-    @Override
-    public void OnError(String message) {
+    public void AuthError(String message) {
         view.onError(message);
     }
 }
