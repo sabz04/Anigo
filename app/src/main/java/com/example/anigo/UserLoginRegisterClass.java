@@ -7,6 +7,8 @@ public class UserLoginRegisterClass {
 
     public String Email;
 
+
+
     public int RoleId;
 
     public UserLoginRegisterClass(String name, String password, String email, int roleId) {

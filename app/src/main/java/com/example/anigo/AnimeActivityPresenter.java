@@ -20,13 +20,7 @@ public class AnimeActivityPresenter implements AnimeActivityContract.Presenter, 
 
     Authentification authentification;
 
-    FeedUserDbHelper db_helper;
-
     OkHttpClient client;
-
-    String login = "";
-
-    String password = "";
 
     Gson gson;
 
@@ -44,17 +38,16 @@ public class AnimeActivityPresenter implements AnimeActivityContract.Presenter, 
     @Override
     public void GetAnime(int id) {
 
-        authentification = new Authentification(this, context);
+        authentification = new Authentification(this, this.context);
 
 
-        this.id =id;
+        this.id = id;
+
         authentification.Auth();
     }
 
-
     @Override
     public void AuthSuccess(String token) {
-
 
         Request request = new Request.Builder()
 
@@ -75,7 +68,6 @@ public class AnimeActivityPresenter implements AnimeActivityContract.Presenter, 
                 String json_body = response.body().string();
                 if(response.code() == 201 || response.code() == 200 || response.code() == 204){
 
-
                     Anime anime = gson.fromJson(json_body, Anime.class);
                     System.out.printf("2");
                     view.OnSuccess(anime);
@@ -87,6 +79,37 @@ public class AnimeActivityPresenter implements AnimeActivityContract.Presenter, 
 
             }
         });
+        //second call to get screenshots
+        Request request_screens = new Request.Builder()
+
+                .url(RequestOptions.request_url_screens_get + id)
+                .get()
+                .addHeader("Authorization", "Bearer " + token )
+                .build();
+        Call call_screens = client.newCall(request_screens);
+
+        call_screens.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                view.OnError(e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String json_body = response.body().string();
+                if(response.code() == 201 || response.code() == 200 || response.code() == 204){
+
+                    Screenshot[] screenshots = gson.fromJson(json_body, Screenshot[].class);
+                    view.OnSuccess(screenshots);
+
+                }
+                else {
+                    view.OnError("error " + json_body);
+                }
+
+            }
+        });
+
     }
 
     @Override

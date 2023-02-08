@@ -1,2 +1,11 @@
-package com.example.anigo;public class User {
+package com.example.anigo;
+
+public class User {
+
+    public int id ;
+    public String name ;
+    public String password ;
+    public String email ;
+    public String image ;
+    public int roleId;
 }

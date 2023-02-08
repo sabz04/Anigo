@@ -1,6 +1,8 @@
 package com.example.anigo;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -10,6 +12,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -22,6 +26,8 @@ public class FragmentAccount extends Fragment implements  FragmentAccountContrac
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+
+    View view;
 
     private FragmentAccountContract.Presenter presenter;
     // TODO: Rename and change types of parameters
@@ -66,11 +72,12 @@ public class FragmentAccount extends Fragment implements  FragmentAccountContrac
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_account, container, false);
 
-
-        presenter = new FragmentAccountPresenter(this);
+        this.view =view;
+        presenter = new FragmentAccountPresenter(this, getContext());
 
         Button btn = (Button) view.findViewById(R.id.button_exit);
 
+        presenter.GetUser();
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -97,12 +104,45 @@ public class FragmentAccount extends Fragment implements  FragmentAccountContrac
     }
 
     @Override
+    public void onSuccess(User user) {
+        String name = user.name;
+        String pass = user.password;
+        String email = user.email;
+
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ImageView image_ava = (ImageView) view.findViewById(R.id.user_image);
+
+                EditText login_edit = (EditText) view.findViewById(R.id.login_tb);
+                EditText pass_edit = (EditText) view.findViewById(R.id.password_tb);
+                EditText email_edit = (EditText) view.findViewById(R.id.post_tb);
+
+                login_edit.setText(name);
+                pass_edit.setText(pass);
+                email_edit.setText(email);
+                image_ava.setImageBitmap(GetImageBitmap(java.util.Base64.getDecoder().decode(user.image)));
+            }
+        });
+
+
+    }
+
+    @Override
     public void onError(String message, String body) {
 
     }
 
     @Override
     public void onError(String message) {
+
+    }
+    private Bitmap GetImageBitmap(byte[] jsonImage){
+
+        Bitmap bitmap = BitmapFactory.decodeByteArray(jsonImage, 0, jsonImage.length);
+        System.out.println(bitmap.getHeight());
+        bitmap= bitmap.copy(Bitmap.Config.ARGB_8888, true);
+        return bitmap;
 
     }
 }

@@ -31,6 +31,7 @@ public class SearchFragmentPresenter implements  SearchFragmentContract.Presente
     String password = "";
 
     String search = "";
+    Context context;
 
     int page = -1;
 
@@ -38,6 +39,7 @@ public class SearchFragmentPresenter implements  SearchFragmentContract.Presente
         this.view = view;
         this.db_helper = new FeedUserDbHelper(context);
         client = new OkHttpClient();
+        this.context = context;
     }
 
     @Override
@@ -48,7 +50,7 @@ public class SearchFragmentPresenter implements  SearchFragmentContract.Presente
     @Override
     public void Search(String search, int page, Context context) {
 
-        authentification =new Authentification(this, context);
+        authentification =new Authentification(this, this.context);
 
         this.search = search;
         this.page = page;
@@ -73,7 +75,7 @@ public class SearchFragmentPresenter implements  SearchFragmentContract.Presente
         FeedUserLocal user = db_helper.CheckIfExist();
 
         Request request = new Request.Builder()
-                .url(String.format("http://192.168.0.105/api/Anime/GetAnimes?page=%o&search=%s",page, search))
+                .url(String.format(RequestOptions.request_url_animes_get,page, search))
                 .get()
                 .addHeader("Authorization", "Bearer " + token )
                 .build();

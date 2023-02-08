@@ -66,10 +66,10 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
     Parcelable state;
     SearchFragment searchFragment;
 
-    ArrayList<Anime> animes_pagination = new ArrayList<>();
-
     int last_seen_elem = -1;
     int current_page = 1;
+    int page_count = -1;
+    String search_text = "";
 
     EditText editText_search;
 
@@ -113,6 +113,19 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+
+
+        if(savedInstanceState == null)
+            return;
+        /*animes_pagination = savedInstanceState.getParcelableArrayList("animes_pagination");*/
+        current_page = savedInstanceState.getInt("current_page");
+
+        page_count = savedInstanceState.getInt("page_count");
+
+        search_text = savedInstanceState.getString("editText_search");
+
+        state = savedInstanceState.getParcelable("grid");
+
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
@@ -120,20 +133,19 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
         }
 
     }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        /*if (savedInstanceState != null) {
-            savedInstanceState = savedInstanceState.getBundle("FRAGMENT_SEARCH");
-            *//*savedInstanceState.getBundle("FRAGMENT_SEARCH");*//*
-            Log.d("bundle_check: ",savedInstanceState.getString("Key_string"));
-        }*/
-    }
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
+        outState.putString("editText_search", search_text);
+
+        /*outState.putParcelableArrayList("animes_pagination", animes_pagination);*/
+
+        outState.putInt("current_page", current_page);
+
+        outState.putInt("page_count", page_count);
+
+        outState.putParcelable("grid", state);
 
 
     }
@@ -141,21 +153,75 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+        presenter = new SearchFragmentPresenter(this,getContext());
         View view;
 
-        view = NavigationActivity.search_fragment_instance;
-        if(view == null)
+        /*view = NavigationActivity.search_fragment_instance;
+        if(view == null)*/
             view = inflater.inflate(R.layout.fragment_search, container, false);
         // save the view to parent activity
 
-        NavigationActivity.search_fragment_instance = view;
+    /*    NavigationActivity.search_fragment_instance = view;*/
+        GridView grd = view.findViewById(R.id.gridView);
+        grd.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView absListView, int i) {
 
+            }
+
+            @Override
+            public void onScroll(AbsListView absListView, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+
+                int last_seen = grd.getLastVisiblePosition();
+
+                if(last_seen == last_seen_elem)
+                    return;
+
+                if (last_seen >= totalItemCount-1){
+                    swp.setRefreshing(true);
+                    presenter.Search(editText_search.getText().toString(), current_page, getContext());;
+                    last_seen_elem = last_seen;
+                }
+
+            }
+        });
+        grd.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+                Intent to_anime = new Intent(getActivity(),AnimeActivity.class);
+
+                Bundle bundle = new Bundle();
+
+                int id = NavigationActivity.animes_pagination.get(i).shikiId;
+                bundle.putInt("id", id);
+
+                to_anime.putExtras(bundle);
+
+                startActivity(to_anime);
+
+                //Toast.makeText(SearchFragment.this.getActivity(), animes[i].nextEpisodeAt.toString(), Toast.LENGTH_LONG).show();
+            }
+        });
+        if(state != null) {
+            Log.d(TAG, "trying to restore listview state");
+            Anime[] anime_array = new Anime[NavigationActivity.animes_pagination.size()];
+
+            GridAdapter gridAdapter = new GridAdapter(SearchFragment.this.getContext(), NavigationActivity.animes_pagination.toArray(anime_array) );
+
+            grd.setAdapter(gridAdapter);
+
+            grd.onRestoreInstanceState(state);
+        }
         current_view = view;
+
         editText_search = (EditText) view.findViewById(R.id.edit_search);
+        editText_search.setText(search_text);
+        search_text = editText_search.getText().toString();
 
         swp = (SwipeRefreshLayout) view.findViewById(R.id.swiperefresh);
 
-        presenter = new SearchFragmentPresenter(this, getContext());
+
 
         swp.setColorSchemeResources(R.color.nicered);
 
@@ -192,16 +258,18 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
     }
     public void ClearPaginationConfig(){
         last_seen_elem=-1;
-        animes_pagination.clear();
+        NavigationActivity.animes_pagination.clear();
         current_page=1;
+        page_count=-1;
+        state =null;
     }
 
     @Override
     public void onSuccess(String message, Anime[] animes, int currentpage, int pagecount) {
         //временно, потом придется current_page перенести в свайпрефреш событие
         Context context = current_view.getContext();
-
-        current_page = currentpage+1;
+        this.page_count = pagecount;
+        this.current_page = currentpage+1;
 
         if (currentpage >= pagecount){
             swp.setRefreshing(false);
@@ -209,9 +277,11 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
         }
 
         for (Anime item:animes) {
-            animes_pagination.add(item);
+            NavigationActivity.animes_pagination.add(item);
         }
 
+        if(getActivity() == null)
+            return;
 
         getActivity().runOnUiThread(new Runnable() {
             @Override
@@ -221,50 +291,13 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
                 GridView grd = (GridView) current_view.findViewById(R.id.gridView);
                 state = grd.onSaveInstanceState();
 
-                grd.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
-                        Intent to_anime = new Intent( context,AnimeActivity.class);
 
-                        Bundle bundle = new Bundle();
 
-                        bundle.putSerializable("current_title", (Serializable) animes_pagination.get(i));
 
-                        to_anime.putExtras(bundle);
+                Anime[] anime_array = new Anime[NavigationActivity.animes_pagination.size()];
 
-                        startActivity(to_anime);
-
-                        //Toast.makeText(SearchFragment.this.getActivity(), animes[i].nextEpisodeAt.toString(), Toast.LENGTH_LONG).show();
-                    }
-                });
-
-                grd.setOnScrollListener(new AbsListView.OnScrollListener() {
-                    @Override
-                    public void onScrollStateChanged(AbsListView absListView, int i) {
-
-                    }
-
-                    @Override
-                    public void onScroll(AbsListView absListView, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-
-                        int last_seen = grd.getLastVisiblePosition();
-
-                        if(last_seen == last_seen_elem)
-                            return;
-
-                        if (last_seen >= totalItemCount-1){
-                            swp.setRefreshing(true);
-                            presenter.Search(editText_search.getText().toString(), current_page, getContext());;
-                            last_seen_elem = last_seen;
-                        }
-
-                    }
-                });
-
-                Anime[] anime_array = new Anime[animes_pagination.size()];
-
-                GridAdapter gridAdapter = new GridAdapter(SearchFragment.this.getContext(), animes_pagination.toArray(anime_array) );
+                GridAdapter gridAdapter = new GridAdapter(SearchFragment.this.getContext(), NavigationActivity.animes_pagination.toArray(anime_array) );
 
 
                 grd.setAdapter(gridAdapter);

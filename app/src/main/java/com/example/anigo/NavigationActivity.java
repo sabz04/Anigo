@@ -14,6 +14,8 @@ import android.view.View;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import java.util.ArrayList;
+
 public class NavigationActivity extends AppCompatActivity {
 
     public static View search_fragment_instance;
@@ -21,6 +23,8 @@ public class NavigationActivity extends AppCompatActivity {
     public static View home_fragment_instance;
 
     public static View fav_fragment_instance;
+
+    public static ArrayList<Anime> animes_pagination = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
