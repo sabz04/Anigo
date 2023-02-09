@@ -112,4 +112,9 @@ public class FragmentAccountPresenter implements  FragmentAccountContract.Presen
             view.onSuccess("Пользователь удален.");
         }*/
     }
+
+    @Override
+    public void AuthSuccess(String token, int user_id) {
+
+    }
 }

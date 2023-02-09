@@ -36,4 +36,9 @@ public class StartAcitivity extends AppCompatActivity implements Authentificatio
         startActivity(intent);
         finish();
     }
+
+    @Override
+    public void AuthSuccess(String token, int user_id) {
+
+    }
 }

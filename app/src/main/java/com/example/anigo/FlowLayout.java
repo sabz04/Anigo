@@ -25,7 +25,7 @@ public class FlowLayout extends ViewGroup {
     protected void setPaddings(Context ctx, AttributeSet attrs){
         TypedArray a = ctx
                 .obtainStyledAttributes(attrs, R.styleable.FlowLayout);
-        String H = "10";
+        String H = "12";
         String V = "10";
         // LOG.d("H = " + H + "V=" + V);
         if (H == null || V == null)

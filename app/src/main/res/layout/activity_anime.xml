@@ -30,7 +30,7 @@
             <Button
                 android:background="@drawable/like"
                 android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_height="35dp"
                 android:id="@+id/like_btn"
                 android:layout_margin="15dp"
                 app:layout_column="2"
@@ -136,8 +136,9 @@
 
 
                     <TextView
-                        android:layout_marginTop="10dp"
                         android:layout_marginBottom="10dp"
+
+
                         android:layout_marginLeft="5dp"
                         android:id="@+id/item_genres"
                         android:text="Студии"
@@ -159,7 +160,9 @@
 
                 </LinearLayout>
                 <TextView
-                    android:layout_margin="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginBottom="10dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="20dp"

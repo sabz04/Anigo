@@ -8,6 +8,7 @@ public interface AuthentificationInterface {
     interface Listener{
         void AuthSuccess(String message);
         void AuthError(String message);
+        void AuthSuccess(String token, int user_id);
     }
 
 }

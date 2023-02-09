@@ -28,7 +28,7 @@ public class ImageBitmapHelper {
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 
         Bitmap current_bitmap = GetImageBitmap(src);
-        Bitmap new_bitmap = getResizedBitmap(current_bitmap, 500, 275);
+        Bitmap new_bitmap = getResizedBitmap(current_bitmap, 500, 295);
         img.setImageBitmap(new_bitmap);
 
         lp.setMargins(10, 5, 10, 5);

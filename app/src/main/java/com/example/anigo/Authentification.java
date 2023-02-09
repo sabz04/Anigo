@@ -81,6 +81,7 @@ public class Authentification implements AuthentificationInterface.Process{
                         Log.d("LOCAL_DATABASE ", "USER is already here");
                     }
                     listener.AuthSuccess(json_body);
+                    listener.AuthSuccess(json_body, user_local.Id);
 
                 }
                 else {

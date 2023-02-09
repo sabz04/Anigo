@@ -113,4 +113,9 @@ public class SearchFragmentPresenter implements  SearchFragmentContract.Presente
     public void AuthError(String message) {
         view.onError(message);
     }
+
+    @Override
+    public void AuthSuccess(String token, int user_id) {
+
+    }
 }

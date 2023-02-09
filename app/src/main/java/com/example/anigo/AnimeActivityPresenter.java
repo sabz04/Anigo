@@ -116,4 +116,9 @@ public class AnimeActivityPresenter implements AnimeActivityContract.Presenter, 
     public void AuthError(String message) {
 
     }
+
+    @Override
+    public void AuthSuccess(String token, int user_id) {
+
+    }
 }
