@@ -26,6 +26,8 @@ public class NavigationActivity extends AppCompatActivity {
 
     public static ArrayList<Anime> animes_pagination = new ArrayList<>();
 
+    public static ArrayList<Favourite> favourites_pagination = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

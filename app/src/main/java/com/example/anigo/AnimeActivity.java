@@ -39,13 +39,17 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
 
     private AnimeActivityPresenterCheckIfExist presenter_check;
 
+    private  AnimeActivityPresenterDeleteFromFav presenter_delete;
+
     private String genres = "";
 
-    AlertDialog dialog;
+    AlertDialog dialog_fav;
+    AlertDialog dialog_delete;
 
     Button like_btn;
 
     Button add_to_fav;
+    Button delete_from_fav_btn;
 
     private String studios = "";
 
@@ -73,22 +77,18 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
 
         like_btn = findViewById(R.id.like_btn);
 
-        like_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                CreateNewContactDialog();
-            }
-        });
+
 
         presenter= new AnimeActivityPresenter(this, getApplicationContext());
         presenter_fav = new AnimeActivityPresenterAddToFavs(this, getApplicationContext());
+        presenter_delete = new AnimeActivityPresenterDeleteFromFav(this,getApplicationContext());
         presenter.GetAnime(id);
 
 
 
 }
 
-    private void CreateNewContactDialog() {
+    private void CreateNewContactDialog_AddToFav() {
         AlertDialog.Builder dialog_builder = new AlertDialog.Builder(this);
         View fav_dialog = getLayoutInflater().inflate(R.layout.dialog_add_to_favs, null);
 
@@ -106,9 +106,28 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
         fav_dialog.setClipToOutline(true);
         dialog_builder.setView(fav_dialog);
 
-        dialog = dialog_builder.create();
-        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        dialog.show();
+        dialog_fav = dialog_builder.create();
+        dialog_fav.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog_fav.show();
+    }
+    private void CreateNewContactDialog_DeleteFromFav() {
+        AlertDialog.Builder dialog_builder = new AlertDialog.Builder(this);
+        View delete_dialog = getLayoutInflater().inflate(R.layout.dialog_delete_from_favs, null);
+
+        delete_from_fav_btn = delete_dialog.findViewById(R.id.delete_btn);
+
+        delete_from_fav_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                presenter_delete.Delete(anime_id);
+            }
+        });
+        delete_dialog.setClipToOutline(true);
+        dialog_builder.setView(delete_dialog);
+
+        dialog_delete = dialog_builder.create();
+        dialog_delete.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog_delete.show();
     }
 
     @Override
@@ -199,7 +218,7 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
             public void run() {
 
                 add_to_fav.setEnabled(true);
-                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG);
+                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
 
             }
         });
@@ -207,12 +226,18 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
     }
 
     @Override
-    public void OnSuccess(String message) {
+    public void OnSuccess(String fav_added) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                dialog.cancel();
+                dialog_fav.cancel();
                 like_btn.setBackgroundDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.liked));
+                like_btn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        CreateNewContactDialog_DeleteFromFav();
+                    }
+                });
             }
         });
 
@@ -247,12 +272,49 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
             public void run() {
 
                 like_btn.setBackgroundDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.liked));
+                like_btn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        CreateNewContactDialog_DeleteFromFav();
+                    }
+                });
             }
         });
     }
 
     @Override
     public void OnErrorCheck(String msg_is_has) {
-            like_btn.setBackgroundDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.like));
+        like_btn.setBackgroundDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.like));
+        like_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                CreateNewContactDialog_AddToFav();
+            }
+        });
+    }
+
+    @Override
+    public void OnSuccessDelete(String deleted_message) {
+        dialog_delete.cancel();
+        like_btn.setBackgroundDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.like));
+
+        like_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                CreateNewContactDialog_AddToFav();
+            }
+        });
+    }
+
+    @Override
+    public void OnErrorDelete(String undeleted_message) {
+
+        like_btn.setBackgroundDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.liked));
+        like_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                CreateNewContactDialog_DeleteFromFav();
+            }
+        });
     }
 }

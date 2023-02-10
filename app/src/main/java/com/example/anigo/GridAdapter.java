@@ -28,6 +28,7 @@ public class GridAdapter extends BaseAdapter {
 
     LayoutInflater inflater;
 
+
     public GridAdapter(Context context, Anime[] animes) {
         this.animeList = animes;
         this.context = context;

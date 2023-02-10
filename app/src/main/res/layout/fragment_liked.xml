@@ -6,16 +6,43 @@
     tools:context=".FragmentLiked">
 
     <!-- TODO: Update blank fragment layout -->
-    <LinearLayout
-        android:layout_gravity="center"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <TextView
-            android:textAlignment="center"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:textSize="45dp"
-            android:text="Избранное" />
-    </LinearLayout>
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="10dp"
+                android:fontFamily="@font/roboto_regular"
+                android:text="Избранное"
+                android:textSize="35dp" />
+            <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/swiperefresh"
+                android:foregroundTint="@color/nicered"
+
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <GridView
+
+                    android:id="@+id/gridView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                </GridView>
+
+
+            </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        </LinearLayout>
+    </RelativeLayout>
+
 
 </FrameLayout>

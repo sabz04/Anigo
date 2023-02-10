@@ -8,6 +8,8 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="nicered">#E76C6C</color>
+    <color name="nicered_ver_2">#f0a5a5</color>
+    <color name="text_comment">#ccc6c6</color>
     <color name="red">#fc0303</color>
     <color name="text_color">#ECECEC</color>
     <color name="icon_color">#494444</color>

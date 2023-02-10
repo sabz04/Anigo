@@ -8,6 +8,8 @@ public interface AnimeActivityContract {
         void OnSuccess(Screenshot[] screenshots);
         void OnSuccessCheck(String msg_is_has);
         void OnErrorCheck(String msg_is_has);
+        void OnSuccessDelete(String deleted_message);
+        void OnErrorDelete(String undeleted_message);
     }
     interface Presenter{
         void GetAnime(int id);
@@ -17,5 +19,8 @@ public interface AnimeActivityContract {
     }
     interface PresenterCheckIfExist{
         void Check(int anime_id);
+    }
+    interface PresenterDeleteFromFav{
+        void Delete(int anime_id);
     }
 }
