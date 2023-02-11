@@ -30,6 +30,9 @@ import android.widget.Toast;
 import org.w3c.dom.Text;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityContract.View{
 
@@ -132,8 +135,6 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
 
     @Override
     public void OnSuccess(Anime anime) {
-        this.genres = "Жанры: ";
-        this.studios = "Студии: ";
         this.anime_id = anime.shikiId;
         presenter_check = new AnimeActivityPresenterCheckIfExist(this, getApplicationContext());
         presenter_check.Check(anime.shikiId);
@@ -160,12 +161,21 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
 
                type.setText(AnimeTypeOrganizer.Organizer(anime.type.name));
 
-               for(Genre genre : anime.genres){
-                   genres += genre.nameRus + " ";
+               TextView date_tb = (TextView)findViewById(R.id.item_date);
+
+               Date date_  = anime.releasedOn;
+
+               if(date_ != null){
+
+                   Calendar calendar = Calendar.getInstance();
+                   calendar.setTime(date_);
+                   String year = String.valueOf(calendar.get(Calendar.YEAR));
+                   String month = GetDate(calendar.get(Calendar.MONTH));
+                   String day = String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
+                   date_tb.setText(String.format("%s %s %s г.", day, month.toLowerCase(Locale.ROOT), year));
                }
-               for(Studio studio : anime.studios){
-                   studios += studio.name + " ";
-               }
+
+
 
                FlowLayout genres_layout = findViewById(R.id.genres_layout);
 
@@ -190,6 +200,47 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
        });
 
 
+    }
+
+    private String GetDate(int month){
+        if(month == 1){
+            return "Январь";
+        }
+        if(month == 2){
+            return "Февраль";
+        }
+        if(month == 3){
+            return "Март";
+        }
+        if(month == 4){
+            return "Май";
+        }
+        if(month == 5){
+            return "Апрель";
+        }
+        if(month == 6){
+            return "Июнь";
+        }
+        if(month == 7){
+            return "Июль";
+        }
+        if(month == 8){
+            return "Август";
+        }
+        if(month == 9){
+            return "Сентябрь";
+        }
+        if(month == 10){
+            return "Октябрь";
+        }
+        if(month == 11){
+            return "Ноябрь";
+        }
+        if(month == 12){
+            return "Декабрь";
+        }
+
+        return "none";
     }
     public TextView Create_New_TextView_Template(Context context, String text, Activity activity){
         TextView txt = new TextView(context);

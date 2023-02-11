@@ -96,7 +96,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"></TextView>
                     <TextView
-                        android:id="@+id/itemYear"
+                        android:id="@+id/item_date"
                         android:textColor="@color/black"
                         android:drawablePadding="10dp"
                         android:textSize="16dp"
