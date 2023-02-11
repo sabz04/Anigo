@@ -28,6 +28,8 @@ public class NavigationActivity extends AppCompatActivity {
 
     public static ArrayList<Favourite> favourites_pagination = new ArrayList<>();
 
+    public static ArrayList<Anime> animes_pagination_popular = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,6 +43,11 @@ public class NavigationActivity extends AppCompatActivity {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
         NavHostFragment fragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.fragmentContainerView);
         NavController navController = fragment.getNavController();
+
+        animes_pagination.clear();
+        animes_pagination_popular.clear();
+        favourites_pagination.clear();
+
         NavigationUI.setupWithNavController(bottomNavigationView, navController);
     }
     @Override

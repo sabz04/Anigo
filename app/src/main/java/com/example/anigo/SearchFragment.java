@@ -64,8 +64,7 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
 
     SearchFragmentContract.Presenter presenter;
     Parcelable state;
-    SearchFragment searchFragment;
-
+    SwipeRefreshLayout swp;
     int last_seen_elem = -1;
     int current_page = 1;
     int page_count = -1;
@@ -73,9 +72,8 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
 
     EditText editText_search;
 
-    Button download_data_btn;
 
-    SwipeRefreshLayout swp;
+
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -200,14 +198,13 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
 
                 startActivity(to_anime);
 
-                //Toast.makeText(SearchFragment.this.getActivity(), animes[i].nextEpisodeAt.toString(), Toast.LENGTH_LONG).show();
             }
         });
         if(state != null) {
             Log.d(TAG, "trying to restore listview state");
             Anime[] anime_array = new Anime[NavigationActivity.animes_pagination.size()];
 
-            GridAdapter gridAdapter = new GridAdapter(SearchFragment.this.getContext(), NavigationActivity.animes_pagination.toArray(anime_array) );
+            GridAdapter gridAdapter = new GridAdapter(SearchFragment.this.getContext(), NavigationActivity.animes_pagination );
 
             grd.setAdapter(gridAdapter);
 
@@ -271,7 +268,7 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
         this.page_count = pagecount;
         this.current_page = currentpage+1;
 
-        if (currentpage >= pagecount){
+        if (currentpage > pagecount){
             swp.setRefreshing(false);
             return;
         }
@@ -286,18 +283,12 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+
 
                 GridView grd = (GridView) current_view.findViewById(R.id.gridView);
                 state = grd.onSaveInstanceState();
 
-
-
-
-
-                Anime[] anime_array = new Anime[NavigationActivity.animes_pagination.size()];
-
-                GridAdapter gridAdapter = new GridAdapter(SearchFragment.this.getContext(), NavigationActivity.animes_pagination.toArray(anime_array) );
+                GridAdapter gridAdapter = new GridAdapter(SearchFragment.this.getContext(), NavigationActivity.animes_pagination );
 
 
                 grd.setAdapter(gridAdapter);
@@ -319,7 +310,7 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+
             }
         });
 
@@ -333,7 +324,7 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+
             }
         });
     }
@@ -345,7 +336,7 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+
             }
         });
     }

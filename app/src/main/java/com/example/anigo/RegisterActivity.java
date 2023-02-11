@@ -12,24 +12,45 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.w3c.dom.Text;
+
 public class RegisterActivity extends AppCompatActivity implements RegisterActivityContract.View{
 
     RegisterActivityPresenter presenter;
+    CreateLoadingContactDialog loadingContactDialog;
+    CreateErrorContactDialog errorContactDialog;
+    Context context;
 
+
+    TextView login_tb;
+    TextView email_tb;
+    TextView password_tb;
+    TextView login_text_view;
+
+    Button register_button;
+
+    String login_tb_text;
+    String password_tb_text;
+    String email_tb_text;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        Button register_button = (Button) findViewById(R.id.registerBTN);
+        register_button = findViewById(R.id.registerBTN);
 
-        EditText login_tb = findViewById(R.id.loginTB);
-        EditText email_tb = findViewById(R.id.emailTB);
-        EditText password_tb = findViewById(R.id.passwordTB);
+        login_tb = findViewById(R.id.loginTB);
+        email_tb = findViewById(R.id.emailTB);
+        password_tb = findViewById(R.id.passwordTB);
 
-        TextView login_text_view = findViewById(R.id.login_text_view);
+        login_text_view = findViewById(R.id.login_text_view);
 
+        context = getApplicationContext();
         presenter = new RegisterActivityPresenter(this);
+
+        loadingContactDialog = new CreateLoadingContactDialog(this);
+        errorContactDialog = new CreateErrorContactDialog(this);
+
 
         login_text_view.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -44,15 +65,25 @@ public class RegisterActivity extends AppCompatActivity implements RegisterActiv
         register_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String login_tb_text = login_tb.getText().toString();
-                String password_tb_text = password_tb.getText().toString();
-                String email_tb_text = email_tb.getText().toString();
+                login_tb_text = login_tb.getText().toString();
+                password_tb_text = password_tb.getText().toString();
+                email_tb_text = email_tb.getText().toString();
 
                 if(TextUtils.isEmpty(login_tb_text) || TextUtils.isEmpty(password_tb_text) || TextUtils.isEmpty(email_tb_text)){
 
                     onError("Заполните все поля.");
                 }else{
-                    if(!email_tb_text.contains("@")){onError("Извините, но такой формат почты недействителен."); return;}
+                    if(!email_tb_text.contains("@")){
+
+                        onError("Извините, но такой формат почты недействителен.");
+                        return;
+                    }
+                    if(password_tb_text.length() < 6){
+                        onError("Пароль должен содержать больше 5 символов.");
+                        return;
+                    }
+                    loadingContactDialog.ShowDialog();
+                    //sending request
                     presenter.Register(password_tb_text, login_tb_text, email_tb_text, 2);
                 }
             }
@@ -61,12 +92,14 @@ public class RegisterActivity extends AppCompatActivity implements RegisterActiv
 
     @Override
     public void onSuccess(String message) {
-        Context context = getWindow().getCurrentFocus().getContext();
-
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+                loadingContactDialog.DeleteDialog();
+                Toast.makeText(RegisterActivity.this , "Пользователь зарегистрирован.", Toast.LENGTH_LONG).show();
+                email_tb.setText("");
+                password_tb.setText("");
+                login_tb.setText("");
             }
         });
 
@@ -74,12 +107,13 @@ public class RegisterActivity extends AppCompatActivity implements RegisterActiv
 
     @Override
     public void onError(String message, String body) {
-        Context context = getWindow().getCurrentFocus().getContext();
-
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+                loadingContactDialog.DeleteDialog();
+
+                errorContactDialog.CreateNewDialog(message);
+                errorContactDialog.ShowDialog();
             }
         });
 
@@ -87,12 +121,13 @@ public class RegisterActivity extends AppCompatActivity implements RegisterActiv
 
     @Override
     public void onError(String message) {
-        Context context = getWindow().getCurrentFocus().getContext();
-
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+                loadingContactDialog.DeleteDialog();
+
+                errorContactDialog.CreateNewDialog(message);
+                errorContactDialog.ShowDialog();
             }
         });
 

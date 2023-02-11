@@ -28,10 +28,13 @@ public class Authentification implements AuthentificationInterface.Process{
 
     String password = "";
 
+    Gson gson;
+
     public Authentification(AuthentificationInterface.Listener listener, Context context){
             this.listener=listener;
             this.db_helper = new FeedUserDbHelper(context);
             this.client = new OkHttpClient();
+            gson= new Gson();
     }
 
     @Override
@@ -71,17 +74,25 @@ public class Authentification implements AuthentificationInterface.Process{
             public void onResponse(Call call, Response response) throws IOException {
                 if(response.code() == 200){
 
+
+
                     String json_body = response.body().string();
+
+                    UserResponse user_response = gson.fromJson(json_body, UserResponse.class);
+
+
                     FeedUserLocal userLocal = db_helper.CheckIfExist();
                     if(userLocal == null){
-                        db_helper.Create(login, password, json_body);
+                        db_helper.Create(user_response.user.name, user_response.user.password, user_response.token);
+
                         Log.d("LOCAL_DATABASE", "hehe, yes! he is actually added to inner database");
                     }
                     else {
                         Log.d("LOCAL_DATABASE ", "USER is already here");
                     }
-                    listener.AuthSuccess(json_body);
-                    listener.AuthSuccess(json_body, user_local.Id);
+                    //db_helper.Delete();
+                    listener.AuthSuccess(user_response.token);
+                    listener.AuthSuccess(user_response.token, user_response.user.id);
 
                 }
                 else {

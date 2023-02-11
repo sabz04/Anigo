@@ -24,19 +24,19 @@ public class GridAdapter extends BaseAdapter {
 
     Context context;
 
-    Anime[] animeList;
+    ArrayList<Anime> animeList;
 
     LayoutInflater inflater;
 
 
-    public GridAdapter(Context context, Anime[] animes) {
+    public GridAdapter(Context context, ArrayList<Anime> animes) {
         this.animeList = animes;
         this.context = context;
     }
 
     @Override
     public int getCount() {
-        return animeList.length;
+        return animeList.size();
     }
 
     @Override
@@ -53,7 +53,7 @@ public class GridAdapter extends BaseAdapter {
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
 
-        Anime anime = animeList[i];
+        Anime anime = animeList.get(i);
 
 
 

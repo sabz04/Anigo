@@ -14,6 +14,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -22,7 +23,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.anigo.databinding.ActivityMainBinding;
+
 import com.google.android.material.snackbar.Snackbar;
 
 public class MainActivity extends AppCompatActivity implements MainActivityContract.View {
@@ -30,18 +31,40 @@ public class MainActivity extends AppCompatActivity implements MainActivityContr
     public static View view;
     private static final String USER_LOGIN_CHECK = "NONE";
     private static final String USER_PASSWORD_CHECK = "NONE";
-    MainActivityContract.Presenter presenter;
 
+    private MainActivityContract.Presenter presenter;
+    private CreateLoadingContactDialog loading_dialog;
+    private CreateErrorContactDialog error_dialog;
+    private TextView password_tv;
+    private Context context;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
 
+
+        loading_dialog = new CreateLoadingContactDialog(this);
+
+        error_dialog = new CreateErrorContactDialog(this);
         TextView register_TV = findViewById(R.id.registerTV);
         Button loginbtn = findViewById(R.id.loginBTN);
         EditText login_tb = findViewById(R.id.loginTB);
         EditText register_tb = findViewById(R.id.regTB);
+
+        context = getApplicationContext();
+        password_tv = findViewById(R.id.password_change_tv);
+
+        password_tv.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
+                    Intent intent = new Intent(MainActivity.this, CodeSendActivity.class);
+                    startActivity(intent);
+                }
+                return false;
+            }
+        });
 
         LinearLayout layout = (LinearLayout) findViewById(R.id.log_layout);
 
@@ -49,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityContr
 
         System.out.println(login_tb.getText().toString());
 
-        presenter = new MainActivityPresenter(this);
+        presenter = new MainActivityPresenter(this, getApplicationContext());
 
 
 
@@ -68,8 +91,10 @@ public class MainActivity extends AppCompatActivity implements MainActivityContr
                     String login_tb_text = login_tb.getText().toString();
                     String register_tb_text = register_tb.getText().toString();
 
-                    if(TextUtils.isEmpty(login_tb_text) || TextUtils.isEmpty(register_tb_text)){
+                    loading_dialog.ShowDialog();
+                    if(login_tb_text.isEmpty() || register_tb_text.isEmpty()){
                         onError("Заполните все поля.");
+                        return;
                     }else{
                         presenter.Login(login_tb_text, register_tb_text, getApplicationContext());
                     }
@@ -82,16 +107,14 @@ public class MainActivity extends AppCompatActivity implements MainActivityContr
 
     @Override
     public void onSuccess(String message) {
-
-        Context context = getApplicationContext();
-
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
                 Intent i = new Intent(getApplicationContext(),NavigationActivity.class);
                 startActivity(i);
                 finish();
+                loading_dialog.DeleteDialog();
+
             }
         });
 
@@ -99,24 +122,24 @@ public class MainActivity extends AppCompatActivity implements MainActivityContr
 
     @Override
     public void onError(String message, String body) {
-        Context context = getWindow().getCurrentFocus().getContext();
-
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+                loading_dialog.DeleteDialog();
+                error_dialog.CreateNewDialog(message);
+                error_dialog.ShowDialog();
             }
         });
     }
 
     @Override
     public void onError(String message) {
-        Context context = getWindow().getCurrentFocus().getContext();
-
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+                 loading_dialog.DeleteDialog();
+                error_dialog.CreateNewDialog(message);
+                error_dialog.ShowDialog();
             }
         });
     }

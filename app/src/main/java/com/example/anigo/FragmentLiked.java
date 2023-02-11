@@ -89,9 +89,6 @@ public class FragmentLiked extends Fragment implements FragmentLikedContract.Vie
         scroll_state = grd.onSaveInstanceState();
         outState.putParcelable("grid", scroll_state);
 
-
-        /*outState.putParcelableArrayList("animes_pagination", animes_pagination);*/
-
         outState.putInt("current_page", current_page);
 
         outState.putInt("page_count", page_count );
@@ -104,6 +101,7 @@ public class FragmentLiked extends Fragment implements FragmentLikedContract.Vie
         view = inflater.inflate(R.layout.fragment_liked, container, false);
         presenter = new FragmentLikedPresenter(this , getContext());
         swp = view.findViewById(R.id.swiperefresh);
+        swp.setColorSchemeResources(R.color.nicered);
         grd = view.findViewById(R.id.gridView);
 
         swp.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -155,11 +153,10 @@ public class FragmentLiked extends Fragment implements FragmentLikedContract.Vie
 
                 startActivity(to_anime);
 
-                //Toast.makeText(SearchFragment.this.getActivity(), animes[i].nextEpisodeAt.toString(), Toast.LENGTH_LONG).show();
             }
         });
-        swp.setRefreshing(true);
-        presenter.GetFavs(current_page);
+
+
 
         if(NavigationActivity.favourites_pagination.size() > 0){
             FragmentLikedGridAdapter adapter = new FragmentLikedGridAdapter(FragmentLiked.this.getContext(), NavigationActivity.favourites_pagination);
@@ -168,8 +165,10 @@ public class FragmentLiked extends Fragment implements FragmentLikedContract.Vie
             if(scroll_state != null)
                 grd.onRestoreInstanceState(scroll_state);
         }
-
-        // Inflate the layout for this fragment
+        else {
+            swp.setRefreshing(true);
+            presenter.GetFavs(current_page);
+        }
         return view;
     }
     private void ClearPageConfig(){

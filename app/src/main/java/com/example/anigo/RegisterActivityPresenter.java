@@ -16,33 +16,34 @@ public class RegisterActivityPresenter implements RegisterActivityContract.Prese
 
     RegisterActivityContract.View view;
 
-    FeedUserDbHelper db_helper;
-
     OkHttpClient client;
 
     String login = "";
 
     String password = "";
 
-    Gson gson;
+    String json = "";
 
-
+    UserLoginRegisterClass reg_user;
     public RegisterActivityPresenter(RegisterActivityContract.View view){
         this.view = view;
-        gson = new Gson();
         client = new OkHttpClient();
     }
     @Override
     public void Register(String password, String login, String Email, int RoleId) {
 
-        UserLoginRegisterClass reg_user = new UserLoginRegisterClass(login, password, Email, RoleId);
-        //converting to json
-        String json = new Gson().toJson(reg_user);
+        this.login = login;
+        this.password = password;
 
+        reg_user = new UserLoginRegisterClass(login, password, Email, RoleId);
+        //converting to json
+        json = new Gson().toJson(reg_user);
+        //SABIROVVV!_
+        // generating new request with okhttp, sure that thats no need to declare that variables outside the method
         RequestBody formBody = RequestBody.create(
                 MediaType.parse("application/json"), json);
-        Request request = new Request.Builder()
 
+        Request request = new Request.Builder()
                 .url(RequestOptions.request_url_register)
                 .post(formBody)
                 .build();
@@ -58,14 +59,15 @@ public class RegisterActivityPresenter implements RegisterActivityContract.Prese
             public void onResponse(Call call, Response response) throws IOException {
                 String json_body = response.body().string();
                 if(response.code() == 201 || response.code() == 200){
-
-
-                    UserLoginAuthClass user = gson.fromJson(json_body, UserLoginAuthClass.class);
-                     view.onSuccess(json_body);
-
+                    User user = new Gson().fromJson(json_body, User.class);
+                    if(user != null)
+                        view.onSuccess(json_body);
+                    else{
+                        view.onError("Ошибка запроса. Повторите попытку.");
+                    }
                 }
                 else {
-                    view.onError("error " + json_body);
+                    view.onError(json_body);
                 }
 
             }

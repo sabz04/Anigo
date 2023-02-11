@@ -22,6 +22,7 @@
                 android:layout_height="match_parent"
                 android:layout_margin="10dp"
                 android:fontFamily="@font/roboto_regular"
+                android:textColor="@color/nicered"
                 android:text="Избранное"
                 android:textSize="35dp" />
             <androidx.swiperefreshlayout.widget.SwipeRefreshLayout

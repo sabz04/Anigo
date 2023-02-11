@@ -24,21 +24,67 @@ public class MainActivityPresenter implements MainActivityContract.Presenter, Ok
 
     MainActivityContract.View view;
 
-    OkHttpUserHelper presenter;
+
+    OkHttpClient client;
+    Context context;
+    FeedUserDbHelper db_helper;
 
     String password = "";
     String login = "";
 
-    public MainActivityPresenter(MainActivityContract.View view){
+    public MainActivityPresenter(MainActivityContract.View view, Context context){
         this.view = view;
+        this.context = context;
+        this.client = new OkHttpClient();
+        this.db_helper = new FeedUserDbHelper(context);
     }
 
     @Override
-    public void  Login(String pass, String log, Context context) {
+    public void  Login(String log, String pass, Context context) {
+        this.login = log;
+        this.password = pass;
 
-        presenter = new OkHttpUserHelper(this, context);
+        UserLoginAuthClass auth_user = new UserLoginAuthClass(login, password);
+        //converting to json
+        String json = new Gson().toJson(auth_user);
 
-        presenter.SendPostLogin(log, pass);
+        RequestBody formBody = RequestBody.create(
+                MediaType.parse("application/json"), json);
+        Request request = new Request.Builder()
+
+                .url(RequestOptions.request_url_login)
+                .post(formBody)
+                .build();
+
+        Call call = client.newCall(request);
+
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                view.onError(e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String json_body = response.body().string();
+                if(response.code() == 200){
+                    FeedUserLocal userLocal = db_helper.CheckIfExist();
+                    if(userLocal == null){
+                        db_helper.Create(login, password, json_body);
+                        Log.d("LOCAL_DATABASE", "hehe, yes! he is actually added to inner database");
+                    }
+                    else {
+                        Log.d("LOCAL_DATABASE ", "USER is already here");
+                    }
+                    view.onSuccess(json_body);
+
+                }
+                else {
+                    view.onError(json_body);
+                }
+
+            }
+        });
 
     }
 

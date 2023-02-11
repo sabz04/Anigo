@@ -25,6 +25,7 @@ public class StartAcitivity extends AppCompatActivity implements Authentificatio
 
     @Override
     public void AuthSuccess(String message) {
+
         intent = new Intent(StartAcitivity.this, NavigationActivity.class);
         startActivity(intent);
         finish();
