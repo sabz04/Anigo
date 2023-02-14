@@ -45,8 +45,8 @@ public class MainActivity extends AppCompatActivity implements MainActivityContr
 
 
         loading_dialog = new CreateLoadingContactDialog(this);
-
         error_dialog = new CreateErrorContactDialog(this);
+
         TextView register_TV = findViewById(R.id.registerTV);
         Button loginbtn = findViewById(R.id.loginBTN);
         EditText login_tb = findViewById(R.id.loginTB);

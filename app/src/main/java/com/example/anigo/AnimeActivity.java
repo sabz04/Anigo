@@ -5,6 +5,10 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import android.app.Activity;
 import android.content.Context;
@@ -164,9 +168,7 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
                TextView date_tb = (TextView)findViewById(R.id.item_date);
 
                Date date_  = anime.releasedOn;
-
                if(date_ != null){
-
                    Calendar calendar = Calendar.getInstance();
                    calendar.setTime(date_);
                    String year = String.valueOf(calendar.get(Calendar.YEAR));
@@ -174,11 +176,7 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
                    String day = String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
                    date_tb.setText(String.format("%s %s %s г.", day, month.toLowerCase(Locale.ROOT), year));
                }
-
-
-
                FlowLayout genres_layout = findViewById(R.id.genres_layout);
-
                FlowLayout studios_layout = findViewById(R.id.studios_layout);
                for(Genre genre : anime.genres){
                    genres_layout.addView(
@@ -198,10 +196,7 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
                }
            }
        });
-
-
     }
-
     private String GetDate(int month){
         if(month == 1){
             return "Январь";
@@ -239,24 +234,15 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
         if(month == 12){
             return "Декабрь";
         }
-
         return "none";
     }
     public TextView Create_New_TextView_Template(Context context, String text, Activity activity){
         TextView txt = new TextView(context);
         txt.setText(text.toString());
-
-
-
         txt.setPadding(10,5,10,5);
-
         Typeface typeface = ResourcesCompat.getFont(this, R.font.roboto_regular);
-
         txt.setTypeface(typeface);
-
-
         txt.setTextSize(15);
-
         txt.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
         txt.setTextColor(activity.getResources().getColor(R.color.white));
         txt.setBackground(ContextCompat.getDrawable(activity, R.drawable.rounded_corners));
@@ -267,10 +253,8 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-
                 add_to_fav.setEnabled(true);
                 Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
-
             }
         });
 
@@ -291,16 +275,11 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
                 });
             }
         });
-
     }
 
     @Override
     public void OnSuccess(Screenshot[] screenshots) {
-        int count = screenshots.length;
-
         LinearLayout screenshots_layout = (LinearLayout) findViewById(R.id.screenshotsLayout);
-
-
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -308,10 +287,8 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
                     screenshots_layout.addView(ImageBitmapHelper.CreateNewCardViewTemplate(
                             ImageBitmapHelper.GetByteArrayFromString(screen.image),
                             getApplicationContext()
-
                     ));
                 }
-
             }
         });
     }
@@ -347,12 +324,20 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
     @Override
     public void OnSuccessDelete(String deleted_message) {
         dialog_delete.cancel();
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+            }
+        });
         like_btn.setBackgroundDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.like));
 
         like_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 CreateNewContactDialog_AddToFav();
+
             }
         });
     }

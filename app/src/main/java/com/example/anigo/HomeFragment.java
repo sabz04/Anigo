@@ -29,13 +29,14 @@ public class HomeFragment extends Fragment implements HomeFragmentContract.View{
 
 
     private HomeFragmentPresenter presenter;
-    private Parcelable state;
+    private static Parcelable state;
     private SwipeRefreshLayout swp;
     private GridView grd_animes;
     private GridAdapter grid_adapter;
     private View current_view;
+    private Context context;
 
-    private int current_page=1, last_seen_elem = -1, page_count = -1;
+    private static int current_page=1, last_seen_elem = -1, page_count = -1;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -57,8 +58,9 @@ public class HomeFragment extends Fragment implements HomeFragmentContract.View{
     public static HomeFragment newInstance(String param1, String param2) {
         HomeFragment fragment = new HomeFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putParcelable("grid_state", state);
+        args.putInt("current_page", current_page);
+        args.putInt("page_count", page_count );
         fragment.setArguments(args);
         return fragment;
     }
@@ -67,26 +69,15 @@ public class HomeFragment extends Fragment implements HomeFragmentContract.View{
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-        if(savedInstanceState != null)
-        {
-            this.current_page = savedInstanceState.getInt("current_page", current_page);
-            this.page_count = savedInstanceState.getInt("page_count", page_count);
-            this.state = savedInstanceState.getParcelable("grid_state");
+            current_page = getArguments().getInt("current_page", current_page);
+            page_count = getArguments().getInt("page_count", page_count);
+            state = getArguments().getParcelable("grid_state");
         }
     }
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         state = grd_animes.onSaveInstanceState();
-        outState.putParcelable("grid_state", state);
-
-        outState.putInt("current_page", current_page);
-
-        outState.putInt("page_count", page_count );
-
     }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -97,32 +88,24 @@ public class HomeFragment extends Fragment implements HomeFragmentContract.View{
         swp = current_view.findViewById(R.id.swiperefresh);
         swp.setColorSchemeResources(R.color.nicered);
 
-        presenter = new HomeFragmentPresenter(this, getContext());
-
-
+        context = getContext();
+        presenter = new HomeFragmentPresenter(this, context);
 
         grd_animes.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
                 Intent to_anime = new Intent(getActivity(),AnimeActivity.class);
-
                 Bundle bundle = new Bundle();
-
                 int id = NavigationActivity.animes_pagination_popular.get(i).shikiId;
                 bundle.putInt("id", id);
-
                 to_anime.putExtras(bundle);
-
                 startActivity(to_anime);
-
-
             }
         });
         swp.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                swp.setRefreshing(false);
+                swp.setRefreshing(true);
                 ClearPageConfig();
                 presenter.GetFavs(current_page);
             }
@@ -143,20 +126,25 @@ public class HomeFragment extends Fragment implements HomeFragmentContract.View{
 
                 if (last_seen >= totalItemCount-1){
                     swp.setRefreshing(true);
+                    current_page++;
                     presenter.GetFavs(current_page);
                     last_seen_elem = last_seen;
                 }
             }
         });
 
-
-        if(NavigationActivity.animes_pagination_popular.size() >0){
-            RestoreGridView();
+        grid_adapter = new GridAdapter(context, NavigationActivity.animes_pagination_popular);
+        grd_animes.setAdapter(grid_adapter);
+        if(state != null){
+            grd_animes.onRestoreInstanceState(state);
+            return current_view;
         }
-        else {
+
+        if(NavigationActivity.animes_pagination_popular.size() < 1){
             swp.setRefreshing(true);
             presenter.GetFavs(current_page);
         }
+
         return current_view;
     }
 
@@ -174,14 +162,13 @@ public class HomeFragment extends Fragment implements HomeFragmentContract.View{
 
     @Override
     public void OnSuccess(Anime[] animes, int current_page, int page_count) {
+        this.page_count = page_count;
+        this.current_page = current_page;
+
         if (current_page > page_count){
             swp.setRefreshing(false);
             return;
         }
-        this.page_count = page_count;
-        this.current_page = current_page+1;
-
-
 
         for (Anime item:animes) {
             NavigationActivity.animes_pagination_popular.add(item);
@@ -189,12 +176,6 @@ public class HomeFragment extends Fragment implements HomeFragmentContract.View{
 
         if(getActivity() == null)
             return;
-
-        for(Anime anime : animes){
-            if(!CheckIfExistInCache(anime)){
-                NavigationActivity.animes_pagination_popular.add(anime);
-            }
-        }
         RestoreGridView();
     }
     private void RestoreGridView(){
@@ -213,16 +194,6 @@ public class HomeFragment extends Fragment implements HomeFragmentContract.View{
             }
         });
     }
-    private boolean CheckIfExistInCache(Anime anime) {
-        for(int i =0; i< NavigationActivity.animes_pagination_popular.size();i++){
-            Anime anime_cached = NavigationActivity.animes_pagination_popular.get(i);
-            if(anime_cached.shikiId == anime.shikiId){
-                return true;
-            }
-        }
-        return false;
-    }
-
     @Override
     public void OnError(String error) {
 

@@ -20,7 +20,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class MainActivityPresenter implements MainActivityContract.Presenter, OkHttpContract.Presenter{
+public class MainActivityPresenter implements MainActivityContract.Presenter{
 
     MainActivityContract.View view;
 
@@ -76,6 +76,7 @@ public class MainActivityPresenter implements MainActivityContract.Presenter, Ok
                     else {
                         Log.d("LOCAL_DATABASE ", "USER is already here");
                     }
+                    FeedUserLocal user_Local = db_helper.CheckIfExist();
                     view.onSuccess(json_body);
 
                 }
@@ -88,23 +89,4 @@ public class MainActivityPresenter implements MainActivityContract.Presenter, Ok
 
     }
 
-    @Override
-    public void OnSuccess(String message) {
-        view.onSuccess(message);
-    }
-
-    @Override
-    public void OnSuccess(String message, Anime[] animes, int current_page, int pages_count) {
-
-    }
-
-    @Override
-    public void OnError(String message) {
-        view.onError(message);
-    }
-
-    @Override
-    public void OnSuccess(Anime anime) {
-
-    }
 }

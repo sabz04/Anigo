@@ -62,31 +62,31 @@ import okhttp3.Response;
 
 public class SearchFragment extends Fragment implements SearchFragmentContract.View {
 
-    SearchFragmentContract.Presenter presenter;
-    Parcelable state;
-    SwipeRefreshLayout swp;
-    int last_seen_elem = -1;
-    int current_page = 1;
-    int page_count = -1;
-    String search_text = "";
+    private SearchFragmentContract.Presenter presenter;
+    private static Parcelable state;
 
-    EditText editText_search;
+    private static int last_seen_elem = -1;
+    private static int current_page = 1;
+    private static int page_count = -1;
+    private static String search_text = "";
 
+    private SwipeRefreshLayout swp;
+    private EditText editText_search;
+    private GridView grd;
+    private Context context;
+
+    private View current_view;
 
 
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 
-    private View current_view;
+
 
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
-    private  Runnable RunnableRefreshListener = null;
-    private static boolean firstEnter = true;
-    private OkHttpClient clientOk = new OkHttpClient();
 
-    private  static  String Search ="";
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
@@ -101,8 +101,15 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
     public static SearchFragment newInstance(String param1, String param2) {
         SearchFragment fragment = new SearchFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+
+        args.putString("editText_search", search_text);
+
+        args.putInt("current_page", current_page);
+
+        args.putInt("page_count", page_count);
+
+        args.putParcelable("grid", state);
+
         fragment.setArguments(args);
         return fragment;
     }
@@ -111,56 +118,47 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
-
-        if(savedInstanceState == null)
+       if(savedInstanceState == null)
             return;
-        /*animes_pagination = savedInstanceState.getParcelableArrayList("animes_pagination");*/
-        current_page = savedInstanceState.getInt("current_page");
 
-        page_count = savedInstanceState.getInt("page_count");
-
-        search_text = savedInstanceState.getString("editText_search");
-
-        state = savedInstanceState.getParcelable("grid");
 
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
+            current_page = getArguments().getInt("current_page");
 
+            page_count = getArguments().getInt("page_count");
+
+            search_text = getArguments().getString("editText_search");
+
+            state = getArguments().getParcelable("grid");
         }
 
     }
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-
-        outState.putString("editText_search", search_text);
-
-        /*outState.putParcelableArrayList("animes_pagination", animes_pagination);*/
-
-        outState.putInt("current_page", current_page);
-
-        outState.putInt("page_count", page_count);
-
-        outState.putParcelable("grid", state);
-
-
+        state = grd.onSaveInstanceState();
+        search_text = editText_search.getText().toString();
     }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        presenter = new SearchFragmentPresenter(this,getContext());
-        View view;
 
-        /*view = NavigationActivity.search_fragment_instance;
-        if(view == null)*/
-            view = inflater.inflate(R.layout.fragment_search, container, false);
-        // save the view to parent activity
+        current_view = inflater.inflate(R.layout.fragment_search, container, false);
 
-    /*    NavigationActivity.search_fragment_instance = view;*/
-        GridView grd = view.findViewById(R.id.gridView);
+        context = getContext();
+        presenter = new SearchFragmentPresenter(this,context);
+
+
+        grd = current_view.findViewById(R.id.gridView);
+        swp = (SwipeRefreshLayout) current_view.findViewById(R.id.swiperefresh);
+        swp.setColorSchemeResources(R.color.nicered);
+
+        editText_search = (EditText) current_view.findViewById(R.id.edit_search);
+        editText_search.setText(search_text);
+
+
         grd.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView absListView, int i) {
@@ -177,7 +175,8 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
 
                 if (last_seen >= totalItemCount-1){
                     swp.setRefreshing(true);
-                    presenter.Search(editText_search.getText().toString(), current_page, getContext());;
+                    current_page++;
+                    presenter.Search(editText_search.getText().toString(), current_page, context);;
                     last_seen_elem = last_seen;
                 }
 
@@ -200,28 +199,6 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
 
             }
         });
-        if(state != null) {
-            Log.d(TAG, "trying to restore listview state");
-            Anime[] anime_array = new Anime[NavigationActivity.animes_pagination.size()];
-
-            GridAdapter gridAdapter = new GridAdapter(SearchFragment.this.getContext(), NavigationActivity.animes_pagination );
-
-            grd.setAdapter(gridAdapter);
-
-            grd.onRestoreInstanceState(state);
-        }
-        current_view = view;
-
-        editText_search = (EditText) view.findViewById(R.id.edit_search);
-        editText_search.setText(search_text);
-        search_text = editText_search.getText().toString();
-
-        swp = (SwipeRefreshLayout) view.findViewById(R.id.swiperefresh);
-
-
-
-        swp.setColorSchemeResources(R.color.nicered);
-
 
         editText_search.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -233,8 +210,7 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
                         ClearPaginationConfig();
                         swp.setRefreshing(true);
                         state=null;
-                        presenter.Search(editText_search.getText().toString(), current_page, getContext());
-
+                        presenter.Search(editText_search.getText().toString(), current_page, context);
 
                     return true;
                 }
@@ -251,7 +227,12 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
             }
         });
 
-        return view;
+        GridAdapter gridAdapter = new GridAdapter(context, NavigationActivity.animes_pagination );
+        grd.setAdapter(gridAdapter);
+        if(state != null)
+            grd.onRestoreInstanceState(state);
+        swp.setRefreshing(false);
+        return current_view;
     }
     public void ClearPaginationConfig(){
         last_seen_elem=-1;
@@ -259,14 +240,13 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
         current_page=1;
         page_count=-1;
         state =null;
+        swp.setRefreshing(false);
     }
 
     @Override
     public void onSuccess(String message, Anime[] animes, int currentpage, int pagecount) {
-        //временно, потом придется current_page перенести в свайпрефреш событие
-        Context context = current_view.getContext();
         this.page_count = pagecount;
-        this.current_page = currentpage+1;
+        this.current_page = currentpage;
 
         if (currentpage > pagecount){
             swp.setRefreshing(false);
@@ -276,29 +256,24 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
         for (Anime item:animes) {
             NavigationActivity.animes_pagination.add(item);
         }
-
-        if(getActivity() == null)
+        if(getActivity() == null){
+            swp.setRefreshing(false);
             return;
+        }
 
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-
-
-                GridView grd = (GridView) current_view.findViewById(R.id.gridView);
                 state = grd.onSaveInstanceState();
-
-                GridAdapter gridAdapter = new GridAdapter(SearchFragment.this.getContext(), NavigationActivity.animes_pagination );
-
+                GridAdapter gridAdapter = new GridAdapter(
+                        context,
+                        NavigationActivity.animes_pagination );
 
                 grd.setAdapter(gridAdapter);
-
                 if(state != null) {
-                    Log.d(TAG, "trying to restore listview state");
                     grd.onRestoreInstanceState(state);
                 }
                 swp.setRefreshing(false);
-
             }
         });
     }
@@ -310,7 +285,7 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-
+                swp.setRefreshing(false);
             }
         });
 
@@ -324,7 +299,7 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-
+                swp.setRefreshing(false);
             }
         });
     }
@@ -336,7 +311,7 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-
+                swp.setRefreshing(false);
             }
         });
     }
