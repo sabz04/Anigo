@@ -30,43 +30,21 @@ import java.util.ArrayList;
  * create an instance of this fragment.
  */
 public class FragmentLiked extends Fragment implements FragmentLikedContract.View{
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    private  static  int need = 1;
-
     private FragmentLikedPresenter presenter;
     private SwipeRefreshLayout swp;
     private View view;
-    private Favourite[] favourites_response;
     private GridView grd;
     private static Parcelable scroll_state;
+    private Context context;
+
     private static int current_page=1;
     private static int last_seen_elem = -1;
     private static int page_count =-1;
-    private ArrayList<Favourite> favourites_temp_cached = new ArrayList<>();
-    private Context context;
-
-    // TODO: Rename and change types of parameters
-    private String mParam1 = "!";
-    private String mParam2;
 
     public FragmentLiked() {
-        // Required empty public constructor
+
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment FragmentLiked.
-     */
-    // TODO: Rename and change types and number of parameters
     public static FragmentLiked newInstance(String param1, String param2) {
         FragmentLiked fragment = new FragmentLiked();
         Bundle args = new Bundle();
@@ -100,7 +78,6 @@ public class FragmentLiked extends Fragment implements FragmentLikedContract.Vie
                              Bundle savedInstanceState) {
 
         view = inflater.inflate(R.layout.fragment_liked, container, false);
-        this.favourites_temp_cached = (ArrayList<Favourite>) NavigationActivity.favourites_pagination.clone();
         presenter = new FragmentLikedPresenter(this , getContext());
         swp = view.findViewById(R.id.swiperefresh);
         swp.setColorSchemeResources(R.color.nicered);
@@ -159,21 +136,6 @@ public class FragmentLiked extends Fragment implements FragmentLikedContract.Vie
             swp.setRefreshing(true);
             presenter.GetFavs(current_page);
         }
-        /*if(NavigationActivity.favourites_pagination.size() < 1){
-            swp.setRefreshing(true);
-            presenter.GetFavs(current_page);
-        }
-        else {
-            scroll_state = grd.onSaveInstanceState();
-            NavigationActivity.favourites_pagination.clear();
-
-            need = current_page;
-            for(int i = 1; i <= page_count; i++){
-                presenter.GetFavs(i);
-            }
-
-        }*/
-
         return view;
     }
     private void ClearPageConfig(){
@@ -195,12 +157,11 @@ public class FragmentLiked extends Fragment implements FragmentLikedContract.Vie
         for(Favourite fav : favourites){
                 NavigationActivity.favourites_pagination.add(fav);
         }
-
-        /*if(current_page != need)
-            return;;*/
-
-        if(getActivity() == null)
+        if(getActivity() == null){
+            swp.setRefreshing(false);
             return;
+        }
+
         scroll_state = grd.onSaveInstanceState();
         getActivity().runOnUiThread(new Runnable() {
             @Override

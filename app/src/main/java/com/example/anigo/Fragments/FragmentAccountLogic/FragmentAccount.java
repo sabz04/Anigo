@@ -30,52 +30,27 @@ import com.example.anigo.R;
  */
 public class FragmentAccount extends Fragment implements  FragmentAccountContract.View{
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    EditText pass_edit;
-    EditText email_tb;
-    TextView login_tv;
-
-    Button exit;
-
-    ImageView image_ava;
-
-    View view;
-    SwipeRefreshLayout swp;
-
-    byte[] avatar;
-    String email="";
-    String login="";
-    String password="";
-
-
-
+    private EditText pass_edit;
+    private EditText email_tb;
+    private TextView login_tv;
+    private Button exit;
+    private ImageView image_ava;
+    private SwipeRefreshLayout swp;
     private FragmentAccountContract.Presenter presenter;
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+
+    private byte[] avatar;
+    private String email="";
+    private String login="";
+    private String password="";
+
 
     public FragmentAccount() {
-        // Required empty public constructor
+
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment FragmentAccount.
-     */
-    // TODO: Rename and change types and number of parameters
     public static FragmentAccount newInstance(String param1, String param2) {
         FragmentAccount fragment = new FragmentAccount();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
     }
@@ -106,10 +81,9 @@ public class FragmentAccount extends Fragment implements  FragmentAccountContrac
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+
         View view = inflater.inflate(R.layout.fragment_account, container, false);
 
-        this.view =view;
         presenter = new FragmentAccountPresenter(this, getContext());
 
         exit = (Button) view.findViewById(R.id.button_exit);
@@ -156,7 +130,6 @@ public class FragmentAccount extends Fragment implements  FragmentAccountContrac
         exit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                
                 presenter.Exit(view.getContext());
             }
         });
@@ -183,6 +156,7 @@ public class FragmentAccount extends Fragment implements  FragmentAccountContrac
 
     @Override
     public void onSuccess(User user) {
+
         this.login = user.name;
         this.password = user.password;
         this.email = user.email;

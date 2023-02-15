@@ -23,91 +23,60 @@ import okhttp3.Response;
 public class Authentification implements AuthentificationInterface.Process{
 
 
-    AuthentificationInterface.Listener listener;
+    private AuthentificationInterface.Listener listener;
+    private FeedUserDbHelper db_helper;
+    private OkHttpClient client;
+    private FeedUserLocal user_local;
+    private UserResponse user_response;
 
-    FeedUserDbHelper db_helper;
-
-    OkHttpClient client;
-
-    String login = "";
-
-    String password = "";
-
-    Gson gson;
+    private String login = "";
+    private String password = "";
 
     public Authentification(AuthentificationInterface.Listener listener, Context context){
             this.listener=listener;
             this.db_helper = new FeedUserDbHelper(context);
             this.client = new OkHttpClient();
-            gson= new Gson();
     }
 
     @Override
     public void Auth() {
-
-        FeedUserLocal user_local = db_helper.CheckIfExist();
+        user_local = db_helper.CheckIfExist();
         if(user_local == null || user_local.Login == null || user_local.Password == null){
-            listener.AuthError("user null");
+            listener.AuthError("Пользователь не авторизован!");
             return;
         }
         else{
             this.login = user_local.Login;
             this.password = user_local.Password;
         }
-
         UserLoginAuthClass auth_user = new UserLoginAuthClass(login, password);
-        //converting to json
         String json = new Gson().toJson(auth_user);
-
         RequestBody formBody = RequestBody.create(
                 MediaType.parse("application/json"), json);
         Request request = new Request.Builder()
-
                 .url(RequestOptions.request_url_login)
                 .post(formBody)
                 .build();
-
         Call call = client.newCall(request);
-
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 listener.AuthError(e.getMessage());
             }
-
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if(response.code() == 200){
-
-
-
                     String json_body = response.body().string();
-
-                    UserResponse user_response = gson.fromJson(json_body, UserResponse.class);
-
-
-                    FeedUserLocal userLocal = db_helper.CheckIfExist();
-                    if(userLocal == null){
-                        db_helper.Create(user_response.user.name, user_response.user.password, user_response.token);
-
-                        Log.d("LOCAL_DATABASE", "hehe, yes! he is actually added to inner database");
-                    }
-                    else {
-                        Log.d("LOCAL_DATABASE ", "USER is already here");
-                    }
-                    //db_helper.Delete();
+                    user_response = new Gson().fromJson(json_body, UserResponse.class);
                     listener.AuthSuccess(user_response.token);
                     listener.AuthSuccess(user_response.token, user_response.user.id);
-
                 }
                 else {
                     listener.AuthError(response.message());
                 }
-
             }
         });
     }
-
     @Override
     public void Auth(String login, String password) {
 

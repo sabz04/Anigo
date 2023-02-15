@@ -23,27 +23,23 @@ import okhttp3.Response;
 
 public class SearchFragmentPresenter implements  SearchFragmentContract.Presenter, AuthentificationInterface.Listener{
 
-    SearchFragmentContract.View view;
+    private SearchFragmentContract.View view;
+    private Authentification authentification;
+    private FeedUserDbHelper db_helper;
+    private OkHttpClient client;
+    private Context context;
+    private FeedUserLocal user_local;
 
-    Authentification authentification;
-
-    FeedUserDbHelper db_helper;
-
-    OkHttpClient client;
-
-    String login = "";
-
-    String password = "";
-
-    String search = "";
-    Context context;
+    private String login = "";
+    private String password = "";
+    private String search = "";
 
     int page = -1;
 
     public SearchFragmentPresenter(SearchFragmentContract.View view, Context context){
         this.view = view;
         this.db_helper = new FeedUserDbHelper(context);
-        client = new OkHttpClient();
+        this.client = new OkHttpClient();
         this.context = context;
     }
 
@@ -54,39 +50,29 @@ public class SearchFragmentPresenter implements  SearchFragmentContract.Presente
 
     @Override
     public void Search(String search, int page, Context context) {
-
         authentification =new Authentification(this, this.context);
-
         this.search = search;
         this.page = page;
-
-
         authentification.Auth();
-
     }
 
     @Override
     public void AuthSuccess(String token) {
-        FeedUserLocal user_local = new FeedUserLocal();
+        user_local = db_helper.CheckIfExist();
         if(user_local == null){
-            view.onError("user null");
+            view.onError("Пользователь не авторизован!");
             return;
         }
         else{
             this.login = user_local.Login;
             this.password = user_local.Password;
         }
-
-        FeedUserLocal user = db_helper.CheckIfExist();
-
         Request request = new Request.Builder()
                 .url(String.format(RequestOptions.request_url_animes_get,page, search))
                 .get()
                 .addHeader("Authorization", "Bearer " + token )
                 .build();
         Call call = client.newCall(request);
-
-        /*Log.v("headers", )*/
 
         call.enqueue(new Callback() {
             @Override
@@ -98,11 +84,7 @@ public class SearchFragmentPresenter implements  SearchFragmentContract.Presente
             public void onResponse(Call call, Response response) throws IOException {
                 if(response.code() == 200){
                     String response_body = response.body().string();
-
-                    GsonBuilder builder = new GsonBuilder();
-                    Gson gson = builder.registerTypeAdapter(Date.class, new DateDeserializer()).create();
-                    AnimeResponse response_animes = gson.fromJson(response_body, AnimeResponse.class);
-
+                    AnimeResponse response_animes = new Gson().fromJson(response_body, AnimeResponse.class);
                     view.onSuccess("Поиск успешен.", response_animes.animes, response_animes.currentPage, response_animes.pages);
                 }
                 else {

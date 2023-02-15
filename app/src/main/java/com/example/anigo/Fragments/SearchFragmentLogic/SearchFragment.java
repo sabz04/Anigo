@@ -42,39 +42,17 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
 
     private View current_view;
 
-
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-
-
-
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
     public SearchFragment() {
-        // Required empty public constructor
+
     }
 
-
-
-    // TODO: Rename and change types and number of parameters
     public static SearchFragment newInstance(String param1, String param2) {
         SearchFragment fragment = new SearchFragment();
         Bundle args = new Bundle();
-
         args.putString("editText_search", search_text);
-
         args.putInt("current_page", current_page);
-
         args.putInt("page_count", page_count);
-
         args.putParcelable("grid", state);
-
         fragment.setArguments(args);
         return fragment;
     }
@@ -82,20 +60,12 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-       if(savedInstanceState == null)
+        if(savedInstanceState == null)
             return;
-
-
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
             current_page = getArguments().getInt("current_page");
-
             page_count = getArguments().getInt("page_count");
-
             search_text = getArguments().getString("editText_search");
-
             state = getArguments().getParcelable("grid");
         }
 
@@ -103,18 +73,17 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        state = grd.onSaveInstanceState();
-        search_text = editText_search.getText().toString();
+        if(grd != null){
+            state = grd.onSaveInstanceState();
+            search_text = editText_search.getText().toString();
+        }
     }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
         current_view = inflater.inflate(R.layout.fragment_search, container, false);
-
         context = getContext();
         presenter = new SearchFragmentPresenter(this,context);
-
 
         grd = current_view.findViewById(R.id.gridView);
         swp = (SwipeRefreshLayout) current_view.findViewById(R.id.swiperefresh);
@@ -123,19 +92,17 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
         editText_search = (EditText) current_view.findViewById(R.id.edit_search);
         editText_search.setText(search_text);
 
-
         grd.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView absListView, int i) {
 
             }
-
             @Override
             public void onScroll(AbsListView absListView, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
 
                 int last_seen = grd.getLastVisiblePosition();
 
-                if(last_seen == last_seen_elem)
+                if(last_seen == last_seen_elem || last_seen == -1)
                     return;
 
                 if (last_seen >= totalItemCount-1){
@@ -150,16 +117,12 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
         grd.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
+                state = grd.onSaveInstanceState();
                 Intent to_anime = new Intent(getActivity(), AnimeActivity.class);
-
                 Bundle bundle = new Bundle();
-
                 int id = NavigationActivity.animes_pagination.get(i).shikiId;
                 bundle.putInt("id", id);
-
                 to_anime.putExtras(bundle);
-
                 startActivity(to_anime);
 
             }
@@ -174,9 +137,7 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
 
                         ClearPaginationConfig();
                         swp.setRefreshing(true);
-                        state=null;
                         presenter.Search(editText_search.getText().toString(), current_page, context);
-
                     return true;
                 }
                 return false;
@@ -200,12 +161,13 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
         return current_view;
     }
     public void ClearPaginationConfig(){
+        swp.setRefreshing(false);
         last_seen_elem=-1;
         NavigationActivity.animes_pagination.clear();
         current_page=1;
         page_count=-1;
         state =null;
-        swp.setRefreshing(false);
+
     }
 
     @Override
@@ -226,14 +188,14 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
             return;
         }
 
+        state = grd.onSaveInstanceState();
+        GridAdapter gridAdapter = new GridAdapter(
+                context,
+                NavigationActivity.animes_pagination);
+
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                state = grd.onSaveInstanceState();
-                GridAdapter gridAdapter = new GridAdapter(
-                        context,
-                        NavigationActivity.animes_pagination );
-
                 grd.setAdapter(gridAdapter);
                 if(state != null) {
                     grd.onRestoreInstanceState(state);
@@ -245,22 +207,16 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
 
     @Override
     public void onSuccess(String message) {
-        Context context = current_view.getContext();
-
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 swp.setRefreshing(false);
             }
         });
-
-
     }
 
     @Override
     public void onError(String message, String body) {
-        Context context = current_view.getContext();
-
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -271,8 +227,6 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
 
     @Override
     public void onError(String message) {
-        Context context = current_view.getContext();
-
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {

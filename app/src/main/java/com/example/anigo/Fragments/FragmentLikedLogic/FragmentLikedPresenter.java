@@ -18,23 +18,17 @@ import okhttp3.Response;
 
 public class FragmentLikedPresenter implements FragmentLikedContract.Presenter , AuthentificationInterface.Listener {
 
-    FragmentLikedContract.View view;
+    private FragmentLikedContract.View view;
+    private Authentification authentification;
+    private OkHttpClient client;
+    private Context context;
 
-    Authentification authentification;
-
-    OkHttpClient client;
-
-    Gson gson;
-
-    Context context;
-
-    int page = -1;
+    private int page = -1;
 
     public FragmentLikedPresenter(FragmentLikedContract.View view, Context context) {
         this.view = view;
         this.context = context;
         client = new OkHttpClient();
-        gson= new Gson();
     }
 
 
@@ -57,7 +51,6 @@ public class FragmentLikedPresenter implements FragmentLikedContract.Presenter ,
     @Override
     public void AuthSuccess(String token, int user_id) {
         Request request = new Request.Builder()
-
                 .url(String.format(RequestOptions.request_url_get_favs,this.page, user_id))
                 .get()
                 .addHeader("Authorization", "Bearer " + token )
@@ -74,14 +67,11 @@ public class FragmentLikedPresenter implements FragmentLikedContract.Presenter ,
             public void onResponse(Call call, Response response) throws IOException {
                 String json_body = response.body().string();
                 if(response.code() == 201 || response.code() == 200 || response.code() == 204){
-
-                    FavResponse fav_response = gson.fromJson(json_body, FavResponse.class);
-                    System.out.printf("2");
+                    FavResponse fav_response = new Gson().fromJson(json_body, FavResponse.class);
                     view.OnSuccess(fav_response.favs, fav_response.currentPage, fav_response.pages);
-
                 }
                 else {
-                    view.OnError("error " + json_body);
+                    view.OnError(json_body);
                 }
 
             }
