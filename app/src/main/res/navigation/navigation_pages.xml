@@ -7,12 +7,12 @@
 
     <fragment
         android:id="@+id/homeFragment"
-        android:name="com.example.anigo.HomeFragment"
+        android:name="com.example.anigo.Fragments.HomeFragmentLogic.HomeFragment"
         android:label="fragment_home"
         tools:layout="@layout/fragment_home" />
     <fragment
         android:id="@+id/searchFragment"
-        android:name="com.example.anigo.SearchFragment"
+        android:name="com.example.anigo.Fragments.SearchFragmentLogic.SearchFragment"
         android:label="fragment_search"
         tools:layout="@layout/fragment_search" >
         <action
@@ -21,12 +21,12 @@
     </fragment>
     <fragment
         android:id="@+id/fragmentAccount"
-        android:name="com.example.anigo.FragmentAccount"
+        android:name="com.example.anigo.Fragments.FragmentAccountLogic.FragmentAccount"
         android:label="fragment_account"
         tools:layout="@layout/fragment_account" />
     <fragment
         android:id="@+id/fragmentLiked"
-        android:name="com.example.anigo.FragmentLiked"
+        android:name="com.example.anigo.Fragments.FragmentLikedLogic.FragmentLiked"
         android:label="fragment_liked"
         tools:layout="@layout/fragment_liked" />
     <fragment

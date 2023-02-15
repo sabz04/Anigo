@@ -19,35 +19,35 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
-            android:name=".PasswordChangeActivity"
+            android:name=".Activities.PasswordChangeActivityLogic.PasswordChangeActivity"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
         <activity
-            android:name=".CodeCheckActivity"
+            android:name=".Activities.CodeCheckActivityLogic.CodeCheckActivity"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
         <activity
-            android:name=".CodeSendActivity"
+            android:name=".Activities.CodeSendActivityLogic.CodeSendActivity"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
         <activity
-            android:name=".AnimeActivity"
+            android:name=".Activities.AnimeActivityLogic.AnimeActivity"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
         <activity
-            android:name=".StartAcitivity"
+            android:name=".Activities.StartActivityLogic.StartAcitivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -56,17 +56,17 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".RegisterActivity"
+            android:name=".Activities.RegisterActivityLogic.RegisterActivity"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
         <activity
-            android:name=".NavigationActivity"
+            android:name=".Activities.NavigationActivityLogic.NavigationActivity"
             android:exported="true" />
         <activity
-            android:name=".MainActivity"
+            android:name=".Activities.MainActivityLogic.MainActivity"
             android:exported="true" />
     </application>
 

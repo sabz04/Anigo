@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".AnimeActivity">
+    tools:context=".Activities.AnimeActivityLogic.AnimeActivity">
 
     <LinearLayout
         android:orientation="vertical"
@@ -125,14 +125,14 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"></TextView>
 
-                      <com.example.anigo.FlowLayout
+                      <com.example.anigo.UiHelper.FlowLayout
 
                             android:id="@+id/genres_layout"
                             android:orientation="horizontal"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content">
 
-                        </com.example.anigo.FlowLayout>
+                        </com.example.anigo.UiHelper.FlowLayout>
 
 
                     <TextView
@@ -148,14 +148,14 @@
 
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"></TextView>
-                    <com.example.anigo.FlowLayout
+                    <com.example.anigo.UiHelper.FlowLayout
 
                         android:id="@+id/studios_layout"
                         android:orientation="horizontal"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
 
-                    </com.example.anigo.FlowLayout>
+                    </com.example.anigo.UiHelper.FlowLayout>
 
 
                 </LinearLayout>

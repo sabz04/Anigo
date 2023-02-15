@@ -7,7 +7,7 @@
     android:layout_gravity="center"
     android:gravity="center"
     android:textAllCaps="false"
-    tools:context=".MainActivity">
+    tools:context=".Activities.MainActivityLogic.MainActivity">
 
 
     <LinearLayout
