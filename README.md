@@ -9,6 +9,6 @@ Use-Case-диаграмма:<br />
 ![image](https://user-images.githubusercontent.com/82723047/218301664-12cb45f5-f122-49ba-b962-3c6b4e2376da.png)
 <br />
 Er-диаграмма:<br />
-![image](https://user-images.githubusercontent.com/82723047/218301702-a9cd05a5-4d63-44ec-8952-ce4eccba5f1b.png)<br />
+![diplom](https://user-images.githubusercontent.com/82723047/219004034-25d55e9b-342d-4ad2-abbd-6f3f74150aab.png)<br />
 Диаграмма потоков экранов: https://www.figma.com/file/wonhxJuNlYcMzlKarMptbK/Diagram---Untitled?t=9kkMi7XnIAfyUPaE-6 <br/>
 ![image](https://user-images.githubusercontent.com/82723047/218301836-a066ac81-8922-4a59-a7ae-afa2a9cb0735.png)
