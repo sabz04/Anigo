@@ -16,10 +16,14 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 
 import com.example.anigo.Activities.AnimeActivityLogic.AnimeActivity;
+import com.example.anigo.GridAdaptersLogic.FragmentLikedGridAdapter;
 import com.example.anigo.GridAdaptersLogic.GridAdapter;
 import com.example.anigo.Models.Anime;
 import com.example.anigo.Activities.NavigationActivityLogic.NavigationActivity;
+import com.example.anigo.Models.Favourite;
 import com.example.anigo.R;
+
+import java.util.ArrayList;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -44,9 +48,7 @@ public class HomeFragment extends Fragment implements HomeFragmentContract.View{
     public static HomeFragment newInstance(String param1, String param2) {
         HomeFragment fragment = new HomeFragment();
         Bundle args = new Bundle();
-        args.putParcelable("grid_state", state);
-        args.putInt("current_page", current_page);
-        args.putInt("page_count", page_count );
+
         fragment.setArguments(args);
         return fragment;
     }
@@ -55,15 +57,21 @@ public class HomeFragment extends Fragment implements HomeFragmentContract.View{
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            current_page = getArguments().getInt("current_page", current_page);
-            page_count = getArguments().getInt("page_count", page_count);
-            state = getArguments().getParcelable("grid_state");
+
+        }
+        if(savedInstanceState != null){
+            current_page = savedInstanceState.getInt("current_page", current_page);
+            page_count = savedInstanceState.getInt("page_count", page_count);
+            state = savedInstanceState.getParcelable("grid_state");
         }
     }
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         state = grd_animes.onSaveInstanceState();
+        outState.putParcelable("grid_state", state);
+        outState.putInt("current_page", current_page);
+        outState.putInt("page_count", page_count );
     }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

@@ -19,10 +19,14 @@ import androidx.fragment.app.Fragment;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.anigo.Activities.AnimeActivityLogic.AnimeActivity;
+import com.example.anigo.GridAdaptersLogic.FragmentLikedGridAdapter;
 import com.example.anigo.GridAdaptersLogic.GridAdapter;
 import com.example.anigo.Models.Anime;
 import com.example.anigo.Activities.NavigationActivityLogic.NavigationActivity;
+import com.example.anigo.Models.Favourite;
 import com.example.anigo.R;
+
+import java.util.ArrayList;
 
 
 public class SearchFragment extends Fragment implements SearchFragmentContract.View {
@@ -49,10 +53,7 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
     public static SearchFragment newInstance(String param1, String param2) {
         SearchFragment fragment = new SearchFragment();
         Bundle args = new Bundle();
-        args.putString("editText_search", search_text);
-        args.putInt("current_page", current_page);
-        args.putInt("page_count", page_count);
-        args.putParcelable("grid", state);
+
         fragment.setArguments(args);
         return fragment;
     }
@@ -60,13 +61,14 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(savedInstanceState == null)
-            return;
+        if(savedInstanceState != null){
+            current_page = savedInstanceState.getInt("current_page");
+            page_count = savedInstanceState.getInt("page_count");
+            search_text = savedInstanceState.getString("editText_search");
+            state = savedInstanceState.getParcelable("grid");
+        }
         if (getArguments() != null) {
-            current_page = getArguments().getInt("current_page");
-            page_count = getArguments().getInt("page_count");
-            search_text = getArguments().getString("editText_search");
-            state = getArguments().getParcelable("grid");
+
         }
 
     }
@@ -77,6 +79,10 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
             state = grd.onSaveInstanceState();
             search_text = editText_search.getText().toString();
         }
+        outState.putString("editText_search", search_text);
+        outState.putInt("current_page", current_page);
+        outState.putInt("page_count", page_count);
+        outState.putParcelable("grid", state);
     }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -88,6 +94,7 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
         grd = current_view.findViewById(R.id.gridView);
         swp = (SwipeRefreshLayout) current_view.findViewById(R.id.swiperefresh);
         swp.setColorSchemeResources(R.color.nicered);
+        swp.setRefreshing(false);
 
         editText_search = (EditText) current_view.findViewById(R.id.edit_search);
         editText_search.setText(search_text);
@@ -153,23 +160,35 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
             }
         });
 
-        GridAdapter gridAdapter = new GridAdapter(context, NavigationActivity.animes_pagination );
-        grd.setAdapter(gridAdapter);
-        if(state != null)
-            grd.onRestoreInstanceState(state);
-        swp.setRefreshing(false);
+        _setGridAdapter(NavigationActivity.animes_pagination, true);
+
         return current_view;
     }
     public void ClearPaginationConfig(){
         swp.setRefreshing(false);
-        last_seen_elem=-1;
         NavigationActivity.animes_pagination.clear();
         current_page=1;
         page_count=-1;
         state =null;
-
     }
-
+    private void _setGridAdapter(ArrayList<Anime> ListAnimes, boolean isFirstEntered){
+        if(!isFirstEntered){
+            state = grd.onSaveInstanceState();
+        }
+        GridAdapter animesAdapter =
+                new GridAdapter(
+                        context,
+                        ListAnimes);
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                grd.setAdapter(animesAdapter);
+                if(state != null)
+                    grd.onRestoreInstanceState(state);
+                swp.setRefreshing(false);
+            }
+        });
+    }
     @Override
     public void onSuccess(String message, Anime[] animes, int currentpage, int pagecount) {
         this.page_count = pagecount;
@@ -187,22 +206,7 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
             swp.setRefreshing(false);
             return;
         }
-
-        state = grd.onSaveInstanceState();
-        GridAdapter gridAdapter = new GridAdapter(
-                context,
-                NavigationActivity.animes_pagination);
-
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                grd.setAdapter(gridAdapter);
-                if(state != null) {
-                    grd.onRestoreInstanceState(state);
-                }
-                swp.setRefreshing(false);
-            }
-        });
+        _setGridAdapter(NavigationActivity.animes_pagination, false);
     }
 
     @Override

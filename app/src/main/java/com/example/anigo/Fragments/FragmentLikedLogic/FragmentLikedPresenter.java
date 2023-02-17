@@ -18,25 +18,25 @@ import okhttp3.Response;
 
 public class FragmentLikedPresenter implements FragmentLikedContract.Presenter , AuthentificationInterface.Listener {
 
-    private FragmentLikedContract.View view;
-    private Authentification authentification;
-    private OkHttpClient client;
-    private Context context;
+    private FragmentLikedContract.View _view;
+    private Authentification _authentification;
+    private OkHttpClient _client;
+    private Context _context;
 
     private int page = -1;
 
     public FragmentLikedPresenter(FragmentLikedContract.View view, Context context) {
-        this.view = view;
-        this.context = context;
-        client = new OkHttpClient();
+        this._view = view;
+        this._context = context;
+        this._client = new OkHttpClient();
     }
 
 
     @Override
     public void GetFavs(int page) {
         this.page = page;
-        authentification = new Authentification(this, this.context);
-        authentification.Auth();
+        _authentification = new Authentification(this, this._context);
+        _authentification.Auth();
     }
     @Override
     public void AuthSuccess(String token) {
@@ -55,12 +55,11 @@ public class FragmentLikedPresenter implements FragmentLikedContract.Presenter ,
                 .get()
                 .addHeader("Authorization", "Bearer " + token )
                 .build();
-        Call call = client.newCall(request);
-
+        Call call = _client.newCall(request);
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                view.OnError(e.getMessage());
+                _view.OnError(e.getMessage());
             }
 
             @Override
@@ -68,10 +67,10 @@ public class FragmentLikedPresenter implements FragmentLikedContract.Presenter ,
                 String json_body = response.body().string();
                 if(response.code() == 201 || response.code() == 200 || response.code() == 204){
                     FavResponse fav_response = new Gson().fromJson(json_body, FavResponse.class);
-                    view.OnSuccess(fav_response.favs, fav_response.currentPage, fav_response.pages);
+                    _view.OnSuccess(fav_response.favs, fav_response.currentPage, fav_response.pages);
                 }
                 else {
-                    view.OnError(json_body);
+                    _view.OnError(json_body);
                 }
 
             }

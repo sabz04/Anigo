@@ -70,13 +70,10 @@ public class FragmentAccount extends Fragment implements  FragmentAccountContrac
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onCreate(outState);
-
         outState.putByteArray("avatar", avatar);
         outState.putString("login", login);
         outState.putString("password", password);
         outState.putString("email", email);
-
-
     }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

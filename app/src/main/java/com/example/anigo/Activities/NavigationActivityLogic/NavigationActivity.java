@@ -59,20 +59,7 @@ public class NavigationActivity extends AppCompatActivity {
     }
     @Override
     public void onWindowFocusChanged (boolean hasFocus){
-        destination_str = "";
-        navController.addOnDestinationChangedListener(new NavController.OnDestinationChangedListener() {
-            @Override
-            public void onDestinationChanged(@NonNull NavController controller, @NonNull NavDestination destination, @Nullable Bundle arguments) {
-                destination_str = destination.getLabel().toString();
-                Log.d("navcontroller", "onDestinationChanged: "+destination.getLabel());
-            }
-        });
-        if(hasFocus && destination_str.contains("fragment_liked")){
-            navController.navigate(R.id.fragmentLiked);
-        }
-        if(hasFocus && destination_str.contains("fragment_search")){
-            navController.navigate(R.id.searchFragment);
-        }
+
 
     }
 }

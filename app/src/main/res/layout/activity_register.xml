@@ -49,6 +49,7 @@
             android:layout_marginRight="10dp"
             android:fontFamily="@font/roboto_regular"
             android:hint="Пароль"
+            android:inputType="textPassword"
             style="@style/Widget.AppCompat.EditText"
             android:textSize="20dp"></EditText>
         <EditText
