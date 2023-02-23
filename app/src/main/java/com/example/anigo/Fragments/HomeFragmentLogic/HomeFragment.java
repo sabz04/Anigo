@@ -56,9 +56,6 @@ public class HomeFragment extends Fragment implements HomeFragmentContract.View{
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-
-        }
         if(savedInstanceState != null){
             current_page = savedInstanceState.getInt("current_page", current_page);
             page_count = savedInstanceState.getInt("page_count", page_count);

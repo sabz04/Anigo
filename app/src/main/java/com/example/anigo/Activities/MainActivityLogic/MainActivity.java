@@ -20,6 +20,7 @@ import com.example.anigo.DialogHelper.CreateErrorContactDialog;
 import com.example.anigo.DialogHelper.CreateLoadingContactDialog;
 import com.example.anigo.Activities.NavigationActivityLogic.NavigationActivity;
 import com.example.anigo.R;
+import com.example.anigo.UiHelper.ExpandableTextView;
 
 public class MainActivity extends AppCompatActivity implements MainActivityContract.View {
 
@@ -46,6 +47,8 @@ public class MainActivity extends AppCompatActivity implements MainActivityContr
         Button loginbtn = findViewById(R.id.loginBTN);
         EditText login_tb = findViewById(R.id.loginTB);
         EditText register_tb = findViewById(R.id.regTB);
+
+
 
         context = getApplicationContext();
         password_tv = findViewById(R.id.password_change_tv);

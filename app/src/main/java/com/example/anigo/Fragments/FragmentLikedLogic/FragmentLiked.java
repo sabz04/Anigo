@@ -31,6 +31,7 @@ import java.util.ArrayList;
  * create an instance of this fragment.
  */
 public class FragmentLiked extends Fragment implements FragmentLikedContract.View{
+
     private FragmentLikedPresenter presenter;
     private SwipeRefreshLayout swp;
     private View view;
@@ -84,6 +85,8 @@ public class FragmentLiked extends Fragment implements FragmentLikedContract.Vie
         grd = view.findViewById(R.id.gridView);
         context = getContext();
         swp.setRefreshing(false);
+
+
 
         swp.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override

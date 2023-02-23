@@ -1,6 +1,7 @@
 package com.example.anigo.Activities.AnimeActivityLogic;
 
 import com.example.anigo.Models.Anime;
+import com.example.anigo.Models.AnimeComment;
 import com.example.anigo.Models.Screenshot;
 
 public interface AnimeActivityContract {
@@ -13,6 +14,10 @@ public interface AnimeActivityContract {
         void OnErrorCheck(String msg_is_has);
         void OnSuccessDelete(String deleted_message);
         void OnErrorDelete(String undeleted_message);
+        void OnSuccessGetComments(AnimeComment[] listComments);
+        void OnErrorGetComments(String errorMessage);
+        void OnSuccessAddComment(String message);
+        void OnErrorAddComment(String message);
     }
     interface Presenter{
         void GetAnime(int id);
@@ -25,5 +30,11 @@ public interface AnimeActivityContract {
     }
     interface PresenterDeleteFromFav{
         void Delete(int anime_id);
+    }
+    interface PresenterGetComments{
+        void GetComments(int animeId);
+    }
+    interface PresenterAddComment{
+        void AddComment(String comment, int animeId);
     }
 }

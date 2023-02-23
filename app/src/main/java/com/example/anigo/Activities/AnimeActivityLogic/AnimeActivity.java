@@ -4,25 +4,56 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.BlurMaskFilter;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.renderscript.Allocation;
+import android.renderscript.Element;
+import android.renderscript.RenderScript;
+import android.renderscript.ScriptIntrinsicBlur;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 /*import com.wefika.flowlayout.FlowLayout;*/
 
+import com.example.anigo.GridAdaptersLogic.CommentGridAdapter;
 import com.example.anigo.Models.Anime;
+import com.example.anigo.Models.AnimeComment;
 import com.example.anigo.Models.Image;
+import com.example.anigo.UiHelper.ExpandableTextView;
 import com.example.anigo.UiHelper.FlowLayout;
 import com.example.anigo.Models.Genre;
 import com.example.anigo.UiHelper.ImageBitmapHelper;
@@ -41,15 +72,19 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
     private AnimeActivityPresenterAddToFavs presenter_fav;
     private AnimeActivityPresenterCheckIfExist presenter_check;
     private AnimeActivityPresenterDeleteFromFav presenter_delete;
+    private AnimeActivityPresenterGetComments presenterGetComments;
+    private AnimeActivityPresenterAddComment _presenterAddComment;
     private Context context;
 
-    private AlertDialog dialog_fav;
+    private AlertDialog favouriteAddDialog;
     private AlertDialog dialog_delete;
 
     private Button like_btn;
     private Button add_to_fav;
     private Button delete_from_fav_btn;
+    private Button _showTextViewBtn;
     private ImageView poster;
+    private Button _addCommentBtn;
 
     private TextView name_rus_tv;
     private TextView name_eng_tv;
@@ -57,12 +92,23 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
     private TextView date_tv;
     private TextView score_tv;
     private TextView type_tv;
+    private EditText _commentTextView;
 
     private FlowLayout genres_layout;
     private FlowLayout studios_layout;
     private LinearLayout screenshots_layout;
+    private LinearLayout _posterBackgroundLayout;
+    private RecyclerView _commentsGridView;
+
+
     private int anime_id=-1;
     private Date anime_released_on;
+    private final int _maxLines = 3;
+    private boolean _isExpanded = false;
+    private Bitmap _posterAnime;
+
+    private String _openShowTextViewBtnText = "Скрыть";
+    private String _closeShowTextViewBtnText = "Раскрыть";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -81,17 +127,74 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
 
         like_btn        = findViewById(R.id.like_btn);
         poster          = findViewById(R.id.itemPoster);
-        name_rus_tv     = (TextView) findViewById(R.id.itemName);
-        description_tv  = (TextView)findViewById(R.id.itemDesc);
-        score_tv        = (TextView)findViewById(R.id.itemScore);
-        type_tv         = (TextView)findViewById(R.id.itemType);
-        date_tv         = (TextView)findViewById(R.id.item_date);
+        name_rus_tv     = findViewById(R.id.itemName);
+        description_tv  = findViewById(R.id.itemDesc);
+        score_tv        = findViewById(R.id.itemScore);
+        type_tv         = findViewById(R.id.itemType);
+        date_tv         = findViewById(R.id.item_date);
         genres_layout   = findViewById(R.id.genres_layout);
         studios_layout  = findViewById(R.id.studios_layout);
         context         = getApplicationContext();
+        _addCommentBtn = findViewById(R.id.add_comment_btn);
+        _commentTextView = findViewById(R.id.comment_edit_text);
+
         presenter        = new AnimeActivityPresenter(this, context);
         presenter_fav    = new AnimeActivityPresenterAddToFavs(this, context);
         presenter_delete = new AnimeActivityPresenterDeleteFromFav(this,context);
+        presenterGetComments = new AnimeActivityPresenterGetComments(context, this);
+        _presenterAddComment = new AnimeActivityPresenterAddComment(context, this);
+
+        _posterBackgroundLayout = findViewById(R.id.poster_background_layout);
+        _showTextViewBtn = findViewById(R.id.show_btn);
+
+        _commentsGridView = findViewById(R.id.comments_grid_view);
+
+
+        _addCommentBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                _presenterAddComment.AddComment(_commentTextView.getText().toString(), anime_id);
+            }
+        });
+
+        description_tv.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                int lineCount = description_tv.getLineCount();
+                if (lineCount > _maxLines) {
+                    description_tv.setMaxLines(_maxLines);
+                }
+            }
+        });
+
+        _showTextViewBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (!_isExpanded) {
+                    // развернуть TextView на максимальное количество строк
+                    description_tv.setMaxLines(Integer.MAX_VALUE);
+                    // обновить флаг
+                    _isExpanded = true;
+                    _showTextViewBtn.setText(_openShowTextViewBtnText);
+                } else {
+                    // свернуть TextView до максимального количества строк, которые должны быть видны
+                    description_tv.setMaxLines(_maxLines);
+                    // обновить флаг
+                    _isExpanded = false;
+                    _showTextViewBtn.setText(_closeShowTextViewBtnText);
+                }
+            }
+        });
 
         presenter.GetAnime(id);
     }
@@ -113,9 +216,9 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
         fav_dialog.setClipToOutline(true);
         dialog_builder.setView(fav_dialog);
 
-        dialog_fav = dialog_builder.create();
-        dialog_fav.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        dialog_fav.show();
+        favouriteAddDialog = dialog_builder.create();
+        favouriteAddDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        favouriteAddDialog.show();
     }
     private void CreateNewContactDialog_DeleteFromFav() {
         AlertDialog.Builder dialog_builder = new AlertDialog.Builder(this);
@@ -141,10 +244,14 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
         this.anime_id   = anime.shikiId;
         presenter_check = new AnimeActivityPresenterCheckIfExist(this, context);
         presenter_check.Check(anime.shikiId);
+
+        presenterGetComments.GetComments(anime_id);
+
+        _posterAnime = ImageBitmapHelper.GetImageBitmap(ImageBitmapHelper.GetByteArrayFromString(anime.images[0].original));
        runOnUiThread(new Runnable() {
            @Override
            public void run() {
-               poster.setImageBitmap(ImageBitmapHelper.GetImageBitmap(ImageBitmapHelper.GetByteArrayFromString(anime.images[0].original)));
+               poster.setImageBitmap(_posterAnime);
                name_rus_tv.setText(anime.nameRus);
                description_tv.setText(anime.description);
                score_tv.setText(String.valueOf(anime.scoreShiki));
@@ -155,8 +262,7 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
                    calendar.setTime(anime_released_on);
                    String year  = String.valueOf(calendar.get(Calendar.YEAR));
                    String month = GetDate(calendar.get(Calendar.MONTH));
-                   String day   = String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
-                   date_tv.setText(String.format("%s %s %s г.", day, month.toLowerCase(Locale.ROOT), year));
+                   date_tv.setText(String.format("%s, %s г.", month.toLowerCase(Locale.ROOT), year));
                }
                for(Genre genre : anime.genres){
                    genres_layout.addView(
@@ -177,6 +283,7 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
            }
        });
     }
+
     private String GetDate(int month){
         if(month == 1){
             return "Январь";
@@ -233,7 +340,7 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                dialog_fav.cancel();
+                favouriteAddDialog.cancel();
                 like_btn.setBackgroundDrawable(ContextCompat.getDrawable(context, R.drawable.liked));
                 like_btn.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -318,4 +425,47 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
             }
         });
     }
+    @Override
+    public void OnSuccessGetComments(AnimeComment[] listComments) {
+        MyAdapter commentRecyclerAdapter = new MyAdapter(this, listComments);
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                _commentsGridView.setLayoutManager(new LinearLayoutManager(context));
+                _commentsGridView.setAdapter(commentRecyclerAdapter);
+
+
+            }
+        });
+    }
+
+    @Override
+    public void OnErrorGetComments(String errorMessage) {
+
+    }
+
+    @Override
+    public void OnSuccessAddComment(String message) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+            }
+        });
+        presenterGetComments.GetComments(anime_id);
+    }
+
+    @Override
+    public void OnErrorAddComment(String message) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+    }
+
+
 }

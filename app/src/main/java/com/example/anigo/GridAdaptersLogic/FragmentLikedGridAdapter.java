@@ -19,17 +19,14 @@ import java.util.ArrayList;
 
 public class FragmentLikedGridAdapter extends BaseAdapter {
 
-    Context context;
-
-    private static final String EMPTY_STRING = "";
+    private Context context;
     private ArrayList<Favourite> favourites;
 
-    LayoutInflater inflater;
+    private LayoutInflater inflater;
 
     public FragmentLikedGridAdapter(Context context, ArrayList<Favourite> favourites) {
         this.context = context;
         this.favourites = favourites;
-
     }
 
     @Override

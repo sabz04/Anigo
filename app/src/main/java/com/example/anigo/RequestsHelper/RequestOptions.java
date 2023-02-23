@@ -14,4 +14,6 @@ public class RequestOptions {
     public static String request_url_get_code           = "http://192.168.0.102:81/api/Login/GetCode?email=";
     public static String request_url_change_pass        = "http://192.168.0.102:81/api/Login/ChangePass?email=%s&password=%s";
     public static String request_url_get_popular        = "http://192.168.0.102:81/api/Anime/GetPopular?page=%d";
+    public static String request_url_get_comments       = "http://192.168.0.102:81/api/Anime/GetAnimeComments?animeId=%d";
+    public static String request_url_add_comment        = "http://192.168.0.102:81/api/Anime/CreateAnimeComment";
 }
