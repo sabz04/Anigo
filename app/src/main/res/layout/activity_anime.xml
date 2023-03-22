@@ -226,10 +226,10 @@
                     android:layout_height="wrap_content"
                     android:id="@+id/show_btn"
                     android:layout_gravity="center"
-                    android:backgroundTint="@color/nicered"
+                    android:backgroundTint="@android:color/transparent"
                     android:fontFamily="@font/roboto_regular"
                     android:text="Раскрыть"
-                    android:textColor="@color/white"
+                    android:textColor="@color/nicered"
                     android:textAllCaps="false"
                     android:textSize="16dp"></Button>
                 <TextView
@@ -257,12 +257,24 @@
                         android:background="@drawable/ic_baseline_send_24"
                         android:layout_height="25dp"></Button>
                 </LinearLayout>
+
                 <androidx.recyclerview.widget.RecyclerView
                     android:nestedScrollingEnabled="false"
                     android:layout_width="match_parent"
                     android:id="@+id/comments_grid_view"
                     android:layout_height="wrap_content"></androidx.recyclerview.widget.RecyclerView>
+                <Button
 
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/commentsActivityShowButton"
+                    android:layout_gravity="center"
+                    android:backgroundTint="@android:color/transparent"
+                    android:fontFamily="@font/roboto_regular"
+                    android:text="Перейти ко всем->"
+                    android:textColor="@color/nicered"
+                    android:textAllCaps="false"
+                    android:textSize="16dp"></Button>
 
             </LinearLayout>
         </ScrollView>

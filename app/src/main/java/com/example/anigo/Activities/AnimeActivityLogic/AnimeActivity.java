@@ -3,57 +3,32 @@ package com.example.anigo.Activities.AnimeActivityLogic;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.BlurMaskFilter;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.ColorMatrix;
-import android.graphics.ColorMatrixColorFilter;
-import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
-import android.graphics.Rect;
-import android.graphics.RectF;
-import android.graphics.Typeface;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.renderscript.Allocation;
-import android.renderscript.Element;
-import android.renderscript.RenderScript;
-import android.renderscript.ScriptIntrinsicBlur;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.DisplayMetrics;
-import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 /*import com.wefika.flowlayout.FlowLayout;*/
 
-import com.example.anigo.GridAdaptersLogic.CommentGridAdapter;
+import com.example.anigo.Activities.AnimeActivityLogic.CommentViewHolderLogic.MyAdapter;
+import com.example.anigo.Activities.NavigationActivityLogic.NavigationActivity;
+import com.example.anigo.CommentsActivityLogic.CommentsActivity;
 import com.example.anigo.Models.Anime;
 import com.example.anigo.Models.AnimeComment;
-import com.example.anigo.Models.Image;
-import com.example.anigo.UiHelper.ExpandableTextView;
 import com.example.anigo.UiHelper.FlowLayout;
 import com.example.anigo.Models.Genre;
 import com.example.anigo.UiHelper.ImageBitmapHelper;
@@ -62,6 +37,7 @@ import com.example.anigo.Models.Screenshot;
 import com.example.anigo.Models.Studio;
 import com.example.anigo.UiHelper.TextViewHelper;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -85,6 +61,7 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
     private Button _showTextViewBtn;
     private ImageView poster;
     private Button _addCommentBtn;
+    private Button openCommentsActivityButton;
 
     private TextView name_rus_tv;
     private TextView name_eng_tv;
@@ -137,6 +114,7 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
         context         = getApplicationContext();
         _addCommentBtn = findViewById(R.id.add_comment_btn);
         _commentTextView = findViewById(R.id.comment_edit_text);
+        openCommentsActivityButton = findViewById(R.id.commentsActivityShowButton);
 
         presenter        = new AnimeActivityPresenter(this, context);
         presenter_fav    = new AnimeActivityPresenterAddToFavs(this, context);
@@ -154,6 +132,16 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
             @Override
             public void onClick(View view) {
                 _presenterAddComment.AddComment(_commentTextView.getText().toString(), anime_id);
+            }
+        });
+        openCommentsActivityButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                NavigationActivity.CommentsPagination.clear();
+                Intent intent = new Intent(AnimeActivity.this, CommentsActivity.class);
+                intent.putExtra("animeId", anime_id);
+                startActivity(intent);
+
             }
         });
 
@@ -426,16 +414,19 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
         });
     }
     @Override
-    public void OnSuccessGetComments(AnimeComment[] listComments) {
-        MyAdapter commentRecyclerAdapter = new MyAdapter(this, listComments);
+    public void OnSuccessGetComments(int pages, int currentPage, int currentPageItemCount,AnimeComment[] listComments, int userId) {
+        ArrayList<AnimeComment> animeComments = new ArrayList<>();
+        for (AnimeComment comment:
+             listComments) {
+            animeComments.add(comment);
+        }
+        MyAdapter commentRecyclerAdapter = new MyAdapter(this, animeComments,userId);
 
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 _commentsGridView.setLayoutManager(new LinearLayoutManager(context));
                 _commentsGridView.setAdapter(commentRecyclerAdapter);
-
-
             }
         });
     }

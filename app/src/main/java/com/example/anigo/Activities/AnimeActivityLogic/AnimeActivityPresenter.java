@@ -52,6 +52,17 @@ public class AnimeActivityPresenter implements AnimeActivityContract.Presenter, 
     @Override
     public void AuthSuccess(String token) {
 
+
+
+    }
+
+    @Override
+    public void AuthError(String message) {
+
+    }
+
+    @Override
+    public void AuthSuccess(String token, int user_id) {
         Request request = new Request.Builder()
 
                 .url(RequestOptions.request_url_anime_get + id)
@@ -112,16 +123,5 @@ public class AnimeActivityPresenter implements AnimeActivityContract.Presenter, 
 
             }
         });
-
-    }
-
-    @Override
-    public void AuthError(String message) {
-
-    }
-
-    @Override
-    public void AuthSuccess(String token, int user_id) {
-
     }
 }

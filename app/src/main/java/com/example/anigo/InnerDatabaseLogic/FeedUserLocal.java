@@ -1,5 +1,7 @@
 package com.example.anigo.InnerDatabaseLogic;
 
+import com.example.anigo.Models.User;
+
 public class FeedUserLocal {
     public int Id;
     public String Login;

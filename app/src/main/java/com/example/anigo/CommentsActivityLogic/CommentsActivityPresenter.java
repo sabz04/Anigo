@@ -1,11 +1,10 @@
-package com.example.anigo.Activities.AnimeActivityLogic;
+package com.example.anigo.CommentsActivityLogic;
 
 import android.content.Context;
 
+import com.example.anigo.Activities.MainActivityLogic.MainActivityContract;
 import com.example.anigo.AuthentificationLogic.Authentification;
 import com.example.anigo.AuthentificationLogic.AuthentificationInterface;
-import com.example.anigo.Models.Anime;
-import com.example.anigo.Models.AnimeComment;
 import com.example.anigo.Models.AnimeCommentResponse;
 import com.example.anigo.RequestsHelper.RequestOptions;
 import com.google.gson.Gson;
@@ -18,26 +17,30 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class AnimeActivityPresenterGetComments implements AuthentificationInterface.Listener, AnimeActivityContract.PresenterGetComments {
+public class CommentsActivityPresenter implements CommentsActivityContract.Presenter, AuthentificationInterface.Listener {
 
-    private AnimeActivityContract.View _view;
-    private Authentification _authentification;
-    private OkHttpClient _okHttpClient;
-    private Context _context;
+    CommentsActivityContract.View view;
+    OkHttpClient client;
+    Context context;
+    Authentification authentification;
 
-    private int _animeId;
+    int page;
+    int animeId;
 
-    public AnimeActivityPresenterGetComments(Context context, AnimeActivityContract.View view) {
-        this._view = view;
-        this._context = context;
-        this._okHttpClient = new OkHttpClient();
+    public CommentsActivityPresenter(CommentsActivityContract.View view, Context context) {
+        this.context = context;
+        this.view = view;
+        client = new OkHttpClient();
     }
+
     @Override
-    public void GetComments(int animeId) {
-        _animeId = animeId;
-        _authentification = new Authentification(this,this._context);
-        _authentification.Auth();
+    public void GetComments(int currentPage, int animeId) {
+        this.page = currentPage;
+        this.animeId = animeId;
+        authentification = new Authentification(this, context);
+        authentification.Auth();
     }
+
     @Override
     public void AuthSuccess(String message) {
 
@@ -52,15 +55,15 @@ public class AnimeActivityPresenterGetComments implements AuthentificationInterf
     public void AuthSuccess(String token, int user_id) {
         Request request = new Request.Builder()
 
-                .url(String.format(RequestOptions.request_url_get_comments, _animeId,1))
+                .url(String.format(RequestOptions.request_url_get_comments, animeId,page))
                 .get()
                 .addHeader("Authorization", "Bearer " + token )
                 .build();
-        Call call = _okHttpClient.newCall(request);
+        Call call = client.newCall(request);
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                _view.OnError(e.getMessage());
+                view.OnError(e.getMessage());
             }
 
             @Override
@@ -68,16 +71,15 @@ public class AnimeActivityPresenterGetComments implements AuthentificationInterf
                 String json_body = response.body().string();
                 if(response.code() == 201 || response.code() == 200 || response.code() == 204){
                     AnimeCommentResponse commentResponse = new Gson().fromJson(json_body, AnimeCommentResponse.class);
-                    _view.OnSuccessGetComments(commentResponse.pages, commentResponse.currentPage, commentResponse.currentPageItemCount, commentResponse.comments,user_id);
-
+                    view.OnSuccessGetComments(commentResponse,user_id);
                 }
                 else {
-                    _view.OnErrorGetComments(json_body);
+                    view.OnError(json_body);
                 }
 
             }
         });
     }
 
+    }
 
-}

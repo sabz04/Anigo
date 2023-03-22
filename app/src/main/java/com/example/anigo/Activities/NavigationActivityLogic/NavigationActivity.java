@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 
 import com.example.anigo.Models.Anime;
+import com.example.anigo.Models.AnimeComment;
 import com.example.anigo.Models.Favourite;
 import com.example.anigo.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -33,6 +34,7 @@ public class NavigationActivity extends AppCompatActivity {
 
     private String  destination_str = "";
 
+    public static ArrayList<AnimeComment> CommentsPagination = new ArrayList<>();
     public static ArrayList<Anime> animes_pagination = new ArrayList<>();
 
     public static ArrayList<Favourite> favourites_pagination = new ArrayList<>();

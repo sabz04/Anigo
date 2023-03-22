@@ -14,6 +14,7 @@ public final class FeedReaderContract {
         public static final String USER_LOGIN = "Login";
         public static final String USER_PASSWORD = "Password";
         public static final String USER_TOKEN = "Token";
+        public static final String USER_ID = "USER_ID";
 
         public static final String SQL_CREATE_ENTRIES =
                 "CREATE TABLE " + FeedEntry.TABLE_NAME + " (" +

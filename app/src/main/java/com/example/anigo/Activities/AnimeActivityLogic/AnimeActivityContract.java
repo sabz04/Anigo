@@ -14,7 +14,8 @@ public interface AnimeActivityContract {
         void OnErrorCheck(String msg_is_has);
         void OnSuccessDelete(String deleted_message);
         void OnErrorDelete(String undeleted_message);
-        void OnSuccessGetComments(AnimeComment[] listComments);
+        void OnSuccessGetComments(
+                int pages, int currentPage, int currentPageItemCount,AnimeComment[] listComments, int userId);
         void OnErrorGetComments(String errorMessage);
         void OnSuccessAddComment(String message);
         void OnErrorAddComment(String message);
