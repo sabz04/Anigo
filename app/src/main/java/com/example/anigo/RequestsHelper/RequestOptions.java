@@ -1,7 +1,7 @@
 package com.example.anigo.RequestsHelper;
 
 public class RequestOptions {
-    public static String MainHost = "http://192.168.1.7:81";
+    public static String MainHost = "http://192.168.0.102:81";
     public static String request_url_login              = MainHost + "/api/Login";
     public static String request_url_register           = MainHost + "/api/Login/Register";
     public static String request_url_animes_get         = MainHost + "/api/Anime/GetAnimes?page=%d&search=%s";
@@ -17,5 +17,7 @@ public class RequestOptions {
     public static String request_url_get_popular        = MainHost + "/api/Anime/GetPopular?page=%d";
     public static String request_url_get_comments       = MainHost + "/api/Comment/GetAnimeComments?animeId=%d&page=%d";
     public static String request_url_add_comment        = MainHost + "/api/Comment/CreateAnimeComment";
-    public static String request_url_add_like        = MainHost + "/api/Comment/LikeComment";
+    public static String request_url_add_like           = MainHost + "/api/Comment/LikeComment";
+    public static String request_url_remove_comment     = MainHost + "/api/Comment/RemoveComment/";
+    public static String request_url_like_delete        = MainHost + "/api/Comment/LikeDelete?commentId=%d&userId=%d";
 }

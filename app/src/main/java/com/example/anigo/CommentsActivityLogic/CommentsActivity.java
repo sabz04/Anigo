@@ -6,35 +6,54 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
-import com.example.anigo.Activities.AnimeActivityLogic.CommentViewHolderLogic.MyAdapter;
+import com.example.anigo.Activities.AnimeActivityLogic.CommentViewHolderLogic.CommentDeletePresenter;
+import com.example.anigo.Activities.AnimeActivityLogic.CommentViewHolderLogic.CommentLikePresenter;
+import com.example.anigo.Activities.AnimeActivityLogic.CommentViewHolderLogic.CommentsAdapter;
+import com.example.anigo.Activities.AnimeActivityLogic.CommentViewHolderLogic.LikeRemovePresenter;
+import com.example.anigo.Activities.AnimeActivityLogic.CommentViewHolderLogic.ViewHolderContract;
 import com.example.anigo.Activities.NavigationActivityLogic.NavigationActivity;
+import com.example.anigo.Models.Anime;
 import com.example.anigo.Models.AnimeComment;
 import com.example.anigo.Models.AnimeCommentResponse;
 import com.example.anigo.R;
 
-public class CommentsActivity extends AppCompatActivity implements CommentsActivityContract.View{
+import java.util.ArrayList;
+
+public class CommentsActivity extends AppCompatActivity implements CommentsActivityContract.View, ViewHolderContract.View {
 
     CommentsActivityPresenter presenter;
 
     RecyclerView commentsRecycler;
     Button backButton;
+    Button downloadButton;
+    Button gridLikeButton;
     Context context;
     SwipeRefreshLayout swipeRefreshLayout;
     Parcelable recyclerViewScrollState;
 
-    MyAdapter recyclerViewAdapter;
+    CommentLikePresenter likePresenter;
+    CommentDeletePresenter deletePresenter;
+    LikeRemovePresenter likeRemovePresenter;
+
+    CommentsAdapter recyclerViewAdapter;
 
     int currentPage = 1;
     int pageCount=-1;
     int lastVisiblePosition=-1;
     int animeId;
+    int lastPage = -1;
 
+
+    int adapterPosition = -1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,15 +63,20 @@ public class CommentsActivity extends AppCompatActivity implements CommentsActiv
         int id = bundle.getInt("animeId");
         this.animeId = id;
         //getcontext
-        context = getApplicationContext();
+        context = this;
         //presenter declaration
         presenter = new CommentsActivityPresenter(this,context);
         presenter.GetComments(currentPage, animeId);
+        //declate the presenters
+        likePresenter = new CommentLikePresenter(this, this);
+        deletePresenter = new CommentDeletePresenter(this, this);
+        likeRemovePresenter = new LikeRemovePresenter(this, this);
         //get UI elems
         backButton = findViewById(R.id.backButton);
+
         commentsRecycler = findViewById(R.id.commentsRecyclerView);
-        swipeRefreshLayout = findViewById(R.id.swiperefresh);
-        swipeRefreshLayout.setRefreshing(true);
+        //swipeRefreshLayout = findViewById(R.id.swiperefresh);
+        //swipeRefreshLayout.setRefreshing(true);
         //set the actions
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -60,7 +84,8 @@ public class CommentsActivity extends AppCompatActivity implements CommentsActiv
                 finish();
             }
         });
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+
+        /*swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 lastVisiblePosition = -1;
@@ -70,22 +95,24 @@ public class CommentsActivity extends AppCompatActivity implements CommentsActiv
                 recyclerViewAdapter = null;
                 presenter.GetComments(currentPage, animeId);
             }
-        });
+        });*/
         commentsRecycler.setOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
+
                 LinearLayoutManager layoutManagerRecycler = (LinearLayoutManager)commentsRecycler.getLayoutManager();
                 lastVisiblePosition = layoutManagerRecycler.findLastVisibleItemPosition();
                 int itemCount = layoutManagerRecycler.getItemCount();
 
                 if(lastVisiblePosition >= itemCount-1){
                     recyclerViewScrollState = layoutManagerRecycler.onSaveInstanceState();
-                    currentPage++;
-                    presenter.GetComments(currentPage, animeId);
+
                 }
+
             }
         });
+
     }
     @Override
     public void onPause() {
@@ -99,24 +126,58 @@ public class CommentsActivity extends AppCompatActivity implements CommentsActiv
     }
     @Override
     public void OnSuccessGetComments(AnimeCommentResponse response, int userId) {
-
-
         if(response.comments.length < 1){
             return;
         }
         for (AnimeComment comment:
              response.comments) {
-            NavigationActivity.CommentsPagination.add(comment);
+            if(!CheckIfExist(comment.id)){
+                NavigationActivity.CommentsPagination.add(comment);
+                Log.wtf("added_comment", String.valueOf(comment.id));
+            }
         }
         if(recyclerViewAdapter == null){
-            recyclerViewAdapter = new MyAdapter(this, NavigationActivity.CommentsPagination, userId);
+            recyclerViewAdapter = new CommentsAdapter(NavigationActivity.CommentsPagination,userId, context);
             recyclerViewAdapter.setStateRestorationPolicy(RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY);
+            recyclerViewAdapter.setLikeClickListener(new CommentsAdapter.likeButtonItemClickListener() {
+                @Override
+                public void onItemLikeClick(int position, Button likeButton) {
+                    likePresenter.AddLike(recyclerViewAdapter.getData().get(position).id,position);
+                    adapterPosition = position;
+                    gridLikeButton = likeButton;
+                }
+            });
+            recyclerViewAdapter.setLoadClickListener(new CommentsAdapter.loadMoreButtonItemClickListener() {
+                @Override
+                public void loadMore() {
+                    currentPage++;
+                    presenter.GetComments(currentPage, animeId);
+                }
+            });
+            recyclerViewAdapter.setDeleteClickListener(new CommentsAdapter.deleteButtonItemClickListener() {
+                @Override
+                public void onItemDeleteClick(int position) {
+                    ArrayList<AnimeComment> commentsAnime = recyclerViewAdapter.getData();
+                    /*AnimeComment comment = recyclerViewAdapter.getData().get(position);*/
+                    AnimeComment com = NavigationActivity.CommentsPagination.get(position);
+                    deletePresenter.RemoveComment(com.id);
+                    adapterPosition = position;
+                }
+            });
+            recyclerViewAdapter.setLikeRemoveClickListener(new CommentsAdapter.likeDeleteItemClickListener() {
+                @Override
+                public void likeDelete(int position) {
+                    adapterPosition = position;
+                    AnimeComment com = NavigationActivity.CommentsPagination.get(position);
+                    likeRemovePresenter.RemoveLike(com.id);
+                }
+            });
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     commentsRecycler.setLayoutManager(new LinearLayoutManager(context));
                     commentsRecycler.setAdapter(recyclerViewAdapter);
-                    swipeRefreshLayout.setRefreshing(false);
+                    //swipeRefreshLayout.setRefreshing(false);
                 }
             });
         }
@@ -124,23 +185,84 @@ public class CommentsActivity extends AppCompatActivity implements CommentsActiv
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    recyclerViewAdapter.notifyItemInserted(NavigationActivity.CommentsPagination.size()-1);
-                    swipeRefreshLayout.setRefreshing(false);
-
+                    recyclerViewAdapter.notifyItemInserted(recyclerViewAdapter.getData().size()-1);
+                    //swipeRefreshLayout.setRefreshing(false);
                 }
             });
         }
-        /*runOnUiThread(new Runnable() {
+
+    }
+    public boolean CheckIfExist(int commentId){
+        boolean ifExist = false;
+        for (AnimeComment comm:
+             NavigationActivity.CommentsPagination) {
+            if(comm.id != commentId){
+                ifExist = false;
+            }
+            else{
+                return true;
+            }
+        }
+        return ifExist;
+    }
+    @Override
+    public void OnError(String message) {
+
+    }
+    @Override
+    public void OnSuccessAddLike(AnimeComment commentAnime, int position) {
+        runOnUiThread(new Runnable() {
             @Override
             public void run() {
-
-
+                NavigationActivity.CommentsPagination.set(adapterPosition, commentAnime);
+                recyclerViewAdapter.notifyItemChanged(adapterPosition);
             }
-        });*/
+        });
+    }
+    @Override
+    public void OnErrorAddLike(String message) {
+
+    }
+    AnimeComment removedComment;
+    @Override
+    public void OnSuccessRemoveComment(String message) {
+        int removedId = Integer.valueOf(message);
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                for (AnimeComment comment:
+                     recyclerViewAdapter.getData()) {
+                    if(comment.id == removedId){
+                        removedComment = comment;
+                    }
+                }
+                NavigationActivity.CommentsPagination.remove(removedComment);
+                recyclerViewAdapter.notifyItemRemoved(adapterPosition);
+                recyclerViewAdapter.notifyItemRangeChanged(adapterPosition,  recyclerViewAdapter.getData().size()-1);
+            }
+        });
     }
 
     @Override
-    public void OnError(String message) {
+    public void OnErrorRemoveComment(String message) {
+
+    }
+
+    @Override
+    public void OnSuccessRemoveLike(AnimeComment comment) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                NavigationActivity.CommentsPagination.set(adapterPosition, comment);
+                recyclerViewAdapter.notifyItemChanged(adapterPosition);
+            }
+        });
+
+    }
+
+    @Override
+    public void OnErrorRemoveLike(String message) {
 
     }
 }

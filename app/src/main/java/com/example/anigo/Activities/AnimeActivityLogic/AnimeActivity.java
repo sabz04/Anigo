@@ -24,7 +24,7 @@ import android.widget.Toast;
 
 /*import com.wefika.flowlayout.FlowLayout;*/
 
-import com.example.anigo.Activities.AnimeActivityLogic.CommentViewHolderLogic.MyAdapter;
+import com.example.anigo.Activities.AnimeActivityLogic.CommentViewHolderLogic.CommentsAdapter;
 import com.example.anigo.Activities.NavigationActivityLogic.NavigationActivity;
 import com.example.anigo.CommentsActivityLogic.CommentsActivity;
 import com.example.anigo.Models.Anime;
@@ -420,7 +420,7 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
              listComments) {
             animeComments.add(comment);
         }
-        MyAdapter commentRecyclerAdapter = new MyAdapter(this, animeComments,userId);
+        CommentsAdapter commentRecyclerAdapter = new CommentsAdapter(animeComments, userId, this);
 
         runOnUiThread(new Runnable() {
             @Override

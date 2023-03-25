@@ -1,12 +1,10 @@
-package com.example.anigo.CommentsActivityLogic;
+package com.example.anigo.Activities.AnimeActivityLogic.CommentViewHolderLogic;
 
 import android.content.Context;
-import android.util.Log;
 
-import com.example.anigo.Activities.MainActivityLogic.MainActivityContract;
 import com.example.anigo.AuthentificationLogic.Authentification;
 import com.example.anigo.AuthentificationLogic.AuthentificationInterface;
-import com.example.anigo.Models.AnimeCommentResponse;
+import com.example.anigo.Models.AnimeComment;
 import com.example.anigo.RequestsHelper.RequestOptions;
 import com.google.gson.Gson;
 
@@ -18,27 +16,25 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class CommentsActivityPresenter implements CommentsActivityContract.Presenter, AuthentificationInterface.Listener {
+public class LikeRemovePresenter implements ViewHolderContract.ILikeRemove, AuthentificationInterface.Listener {
 
-    CommentsActivityContract.View view;
-    OkHttpClient client;
     Context context;
     Authentification authentification;
+    OkHttpClient okHttpClient;
+    ViewHolderContract.View view;
 
-    int page;
-    int animeId;
+    int commentId = -1;
 
-    public CommentsActivityPresenter(CommentsActivityContract.View view, Context context) {
+    public LikeRemovePresenter(ViewHolderContract.View view, Context context) {
         this.context = context;
         this.view = view;
-        client = new OkHttpClient();
+        authentification = new Authentification(this, context);
+        okHttpClient = new OkHttpClient();
     }
 
     @Override
-    public void GetComments(int currentPage, int animeId) {
-        this.page = currentPage;
-        this.animeId = animeId;
-        authentification = new Authentification(this, context);
+    public void RemoveLike(int commentId) {
+        this.commentId = commentId;
         authentification.Auth();
     }
 
@@ -55,32 +51,29 @@ public class CommentsActivityPresenter implements CommentsActivityContract.Prese
     @Override
     public void AuthSuccess(String token, int user_id) {
         Request request = new Request.Builder()
-
-                .url(String.format(RequestOptions.request_url_get_comments, animeId,page))
+                .url(String.format(RequestOptions.request_url_like_delete, commentId, user_id))
                 .get()
                 .addHeader("Authorization", "Bearer " + token )
                 .build();
-        Call call = client.newCall(request);
+        Call call = okHttpClient.newCall(request);
+
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                view.OnError(e.getMessage());
+                view.OnErrorAddLike(e.getMessage());
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String json_body = response.body().string();
                 if(response.code() == 201 || response.code() == 200 || response.code() == 204){
-                    AnimeCommentResponse commentResponse = new Gson().fromJson(json_body, AnimeCommentResponse.class);
-                    view.OnSuccessGetComments(commentResponse,user_id);
+                    AnimeComment comment = new Gson().fromJson(json_body, AnimeComment.class);
+                    view.OnSuccessRemoveLike(comment);
                 }
                 else {
-                    view.OnError(json_body);
+                    view.OnErrorRemoveLike(json_body);
                 }
-
             }
         });
     }
-
-    }
-
+}

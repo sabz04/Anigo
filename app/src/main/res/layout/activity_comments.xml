@@ -5,48 +5,47 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".CommentsActivityLogic.CommentsActivity">
-    <LinearLayout
-        android:layout_margin="10dp"
-        android:layout_width="match_parent"
-        android:orientation="vertical"
-        android:layout_height="wrap_content">
-        <androidx.gridlayout.widget.GridLayout
+
+        <LinearLayout
             android:layout_width="match_parent"
-            app:columnCount="3"
-            android:background="@android:color/transparent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent"
+            android:layout_margin="10dp"
+            android:orientation="vertical">
+
             <Button
                 android:id="@+id/backButton"
-                app:layout_column="0"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
+                android:background="@drawable/back"
                 android:textColor="@color/white"
                 android:textSize="17dp"
-                android:background="@drawable/back"
+                app:layout_column="0"
 
                 ></Button>
-</androidx.gridlayout.widget.GridLayout>
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
 
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="10dp"
-            android:layout_marginBottom="10dp"
-            android:fontFamily="@font/roboto_bold"
-            android:text="Комментарии"
-            android:textSize="20dp" />
-        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-            android:layout_width="match_parent"
-            android:id="@+id/swiperefresh"
-            android:layout_height="wrap_content">
-
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="10dp"
+                android:layout_marginBottom="10dp"
+                android:fontFamily="@font/roboto_bold"
+                android:text="Комментарии"
+                android:textSize="20dp" />
             <androidx.recyclerview.widget.RecyclerView
-                android:nestedScrollingEnabled="false"
-                android:layout_width="match_parent"
                 android:id="@+id/commentsRecyclerView"
-                android:layout_height="wrap_content"></androidx.recyclerview.widget.RecyclerView>
-        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                >
+            </androidx.recyclerview.widget.RecyclerView>
 
-    </LinearLayout>
+            <!--<Button
+                android:layout_gravity="center"
+                android:layout_width="match_parent"
+                android:layout_alignParentBottom="true"
+                android:id="@+id/downloadButton"
+                android:text="Загрузить еще"
+                android:layout_height="wrap_content"></Button>-->
+        </LinearLayout>
+
 </RelativeLayout>

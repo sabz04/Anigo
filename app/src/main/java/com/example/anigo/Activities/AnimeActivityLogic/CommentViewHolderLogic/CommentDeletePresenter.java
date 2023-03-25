@@ -1,12 +1,11 @@
-package com.example.anigo.CommentsActivityLogic;
+package com.example.anigo.Activities.AnimeActivityLogic.CommentViewHolderLogic;
 
 import android.content.Context;
-import android.util.Log;
 
-import com.example.anigo.Activities.MainActivityLogic.MainActivityContract;
 import com.example.anigo.AuthentificationLogic.Authentification;
 import com.example.anigo.AuthentificationLogic.AuthentificationInterface;
-import com.example.anigo.Models.AnimeCommentResponse;
+import com.example.anigo.Models.AnimeComment;
+import com.example.anigo.Models.CommentLikeAddClass;
 import com.example.anigo.RequestsHelper.RequestOptions;
 import com.google.gson.Gson;
 
@@ -14,33 +13,26 @@ import java.io.IOException;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class CommentsActivityPresenter implements CommentsActivityContract.Presenter, AuthentificationInterface.Listener {
-
-    CommentsActivityContract.View view;
+public class CommentDeletePresenter implements AuthentificationInterface.Listener, ViewHolderContract.ICommentDelete {
     OkHttpClient client;
     Context context;
     Authentification authentification;
+    ViewHolderContract.View view;
 
-    int page;
-    int animeId;
-
-    public CommentsActivityPresenter(CommentsActivityContract.View view, Context context) {
+    public CommentDeletePresenter(Context context, ViewHolderContract.View view) {
         this.context = context;
         this.view = view;
-        client = new OkHttpClient();
+        this.client = new OkHttpClient();
+        authentification = new Authentification(this, context);
     }
 
-    @Override
-    public void GetComments(int currentPage, int animeId) {
-        this.page = currentPage;
-        this.animeId = animeId;
-        authentification = new Authentification(this, context);
-        authentification.Auth();
-    }
+    int commentId;
 
     @Override
     public void AuthSuccess(String message) {
@@ -54,33 +46,37 @@ public class CommentsActivityPresenter implements CommentsActivityContract.Prese
 
     @Override
     public void AuthSuccess(String token, int user_id) {
-        Request request = new Request.Builder()
 
-                .url(String.format(RequestOptions.request_url_get_comments, animeId,page))
+        Request request = new Request.Builder()
+                .url(RequestOptions.request_url_remove_comment + commentId)
                 .get()
                 .addHeader("Authorization", "Bearer " + token )
                 .build();
         Call call = client.newCall(request);
+
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                view.OnError(e.getMessage());
+                view.OnErrorAddLike(e.getMessage());
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String json_body = response.body().string();
                 if(response.code() == 201 || response.code() == 200 || response.code() == 204){
-                    AnimeCommentResponse commentResponse = new Gson().fromJson(json_body, AnimeCommentResponse.class);
-                    view.OnSuccessGetComments(commentResponse,user_id);
+
+                   view.OnSuccessRemoveComment(json_body);
                 }
                 else {
-                    view.OnError(json_body);
+                    view.OnErrorRemoveComment(json_body);
                 }
-
             }
         });
     }
 
+    @Override
+    public void RemoveComment(int commentId) {
+        this.commentId = commentId;
+        authentification.Auth();
     }
-
+}

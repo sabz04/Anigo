@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.example.anigo.AuthentificationLogic.Authentification;
 import com.example.anigo.AuthentificationLogic.AuthentificationInterface;
+import com.example.anigo.Models.AnimeComment;
 import com.example.anigo.Models.CommentLikeAddClass;
 import com.example.anigo.RequestsHelper.RequestOptions;
 import com.google.gson.Gson;
@@ -26,6 +27,7 @@ public class CommentLikePresenter implements AuthentificationInterface.Listener,
     ViewHolderContract.View view;
 
     int commentId = -1;
+    int adapterPosition = -1;
 
     public CommentLikePresenter( ViewHolderContract.View view,Context context) {
         this.context = context;
@@ -34,8 +36,9 @@ public class CommentLikePresenter implements AuthentificationInterface.Listener,
         authentification = new Authentification(this, this.context);
     }
     @Override
-    public void AddLike(int commentId) {
+    public void AddLike(int commentId, int adapterPosition) {
         this.commentId = commentId;
+        this.adapterPosition = adapterPosition;
         authentification.Auth();
     }
     @Override
@@ -74,7 +77,9 @@ public class CommentLikePresenter implements AuthentificationInterface.Listener,
             public void onResponse(Call call, Response response) throws IOException {
                 String json_body = response.body().string();
                 if(response.code() == 201 || response.code() == 200 || response.code() == 204){
-                    view.OnSuccessAddLike(json_body);
+                    AnimeComment commentAnime = new Gson().fromJson(json_body, AnimeComment.class);
+
+                    view.OnSuccessAddLike(commentAnime, adapterPosition);
                 }
                 else {
                     view.OnErrorAddLike(json_body);
