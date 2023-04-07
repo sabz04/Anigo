@@ -138,10 +138,9 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
         editText_search.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int actionId, KeyEvent event) {
-                System.out.println(actionId);
                 if (actionId == EditorInfo.IME_ACTION_SEARCH
-                        || actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
-
+                        || actionId == EditorInfo.IME_ACTION_DONE
+                                || actionId == EditorInfo.IME_ACTION_NEXT) {
                         ClearPaginationConfig();
                         swp.setRefreshing(true);
                         presenter.Search(editText_search.getText().toString(), current_page, context);

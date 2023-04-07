@@ -1,12 +1,30 @@
 package com.example.anigo.Fragments.FragmentAccountLogic;
 
+import static android.app.Activity.RESULT_OK;
+
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.net.Credentials;
+import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.activity.result.ActivityResultCallback;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContract;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -15,13 +33,20 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.anigo.Activities.CodeSendActivityLogic.CodeSendActivity;
+import com.example.anigo.DialogHelper.CreateLoadingContactDialog;
+import com.example.anigo.RequestsHelper.RequestOptions;
 import com.example.anigo.UiHelper.ImageBitmapHelper;
 import com.example.anigo.Activities.MainActivityLogic.MainActivity;
 import com.example.anigo.Models.User;
 import com.example.anigo.Activities.NavigationActivityLogic.NavigationActivity;
 import com.example.anigo.R;
+import com.squareup.picasso.Picasso;
+
+import java.io.File;
+import java.nio.file.Paths;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -29,7 +54,9 @@ import com.example.anigo.R;
  * create an instance of this fragment.
  */
 public class FragmentAccount extends Fragment implements  FragmentAccountContract.View{
-
+    private static final int REQUEST_PERMISSIONS = 100;
+    private static final int REQUEST_CODE_PERMISSIONS = 123;
+    private AlertDialog changePhotoDialog;
     private EditText pass_edit;
     private EditText email_tb;
     private TextView login_tv;
@@ -37,12 +64,15 @@ public class FragmentAccount extends Fragment implements  FragmentAccountContrac
     private ImageView image_ava;
     private SwipeRefreshLayout swp;
     private FragmentAccountContract.Presenter presenter;
+    CreateLoadingContactDialog loadingContactDialog;
 
-    private byte[] avatar;
+    private String userAvatarUrl;
     private String email="";
     private String login="";
     private String password="";
+    ActivityResultLauncher<String> launcher;
 
+    private FragmentAccountChangePhoto fragmentAccountChangePhotoPresenter;
 
     public FragmentAccount() {
 
@@ -59,7 +89,7 @@ public class FragmentAccount extends Fragment implements  FragmentAccountContrac
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if(savedInstanceState != null){
-            avatar = savedInstanceState.getByteArray("avatar");
+            userAvatarUrl = savedInstanceState.getString("avatar");
             login = savedInstanceState.getString("login");
             password = savedInstanceState.getString("password");
             email = savedInstanceState.getString("email");
@@ -70,7 +100,7 @@ public class FragmentAccount extends Fragment implements  FragmentAccountContrac
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onCreate(outState);
-        outState.putByteArray("avatar", avatar);
+        outState.putString("avatar", userAvatarUrl);
         outState.putString("login", login);
         outState.putString("password", password);
         outState.putString("email", email);
@@ -82,7 +112,8 @@ public class FragmentAccount extends Fragment implements  FragmentAccountContrac
         View view = inflater.inflate(R.layout.fragment_account, container, false);
 
         presenter = new FragmentAccountPresenter(this, getContext());
-
+        fragmentAccountChangePhotoPresenter  = new FragmentAccountChangePhoto(this, getContext());
+        loadingContactDialog = new CreateLoadingContactDialog(getContext());
         exit = (Button) view.findViewById(R.id.button_exit);
 
         swp = view.findViewById(R.id.swiperefresh);
@@ -92,6 +123,19 @@ public class FragmentAccount extends Fragment implements  FragmentAccountContrac
         email_tb = view.findViewById(R.id.post_tb);
         pass_edit = view.findViewById(R.id.password_tb);
         image_ava = view.findViewById(R.id.user_image);
+
+        launcher = registerForActivityResult(new ActivityResultContracts.GetContent(), new ActivityResultCallback<Uri>() {
+            @Override
+            public void onActivityResult(Uri result) {
+
+            }});
+
+        image_ava.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                    CreateNewChooseDialog();
+            }
+        });
 
         pass_edit.setKeyListener(null);
         pass_edit.setOnTouchListener(new View.OnTouchListener() {
@@ -111,6 +155,7 @@ public class FragmentAccount extends Fragment implements  FragmentAccountContrac
             @Override
             public void onRefresh() {
                 swp.setRefreshing(true);
+                userAvatarUrl = "";
                 presenter.GetUser();
             }
         });
@@ -118,7 +163,7 @@ public class FragmentAccount extends Fragment implements  FragmentAccountContrac
             login_tv.setText(login);
             email_tb.setText(email);
             pass_edit.setText(password);
-            image_ava.setImageBitmap(ImageBitmapHelper.GetImageBitmap(avatar));
+            Picasso.with(getContext()).load(RequestOptions.MainHost + userAvatarUrl).into(image_ava);
         }
         else {
             presenter.GetUser();
@@ -133,7 +178,88 @@ public class FragmentAccount extends Fragment implements  FragmentAccountContrac
 
         return view;
     }
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
+        if (requestCode == 1 && resultCode == RESULT_OK && data != null) {
+            // Получаем URI выбранного изображения
+            Uri imageUri = data.getData();
+
+            fragmentAccountChangePhotoPresenter.ChangePhoto(imageUri);
+            loadingContactDialog.ShowDialog();
+        }
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (requestCode == REQUEST_PERMISSIONS && grantResults.length > 0 &&
+                grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            // Разрешение предоставлено
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            startActivityForResult(intent, 1);
+
+            loadingContactDialog.ShowDialog();
+            changePhotoDialog.cancel();
+      } else {
+            // Разрешение не предоставлено
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getActivity(), "Доступ к галерее запрещен", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+        }
+    }
+    public File uriToFile(Uri uri) {
+        String filePath = uri.getPath();
+        File file = new File(filePath);
+        return file;
+    }
+    private void CreateNewChooseDialog(){
+        AlertDialog.Builder dialog_builder = new AlertDialog.Builder(getContext());
+        View changingView = getLayoutInflater().inflate(R.layout.android_choose_changing, null);
+
+        Button acceptButton = changingView.findViewById(R.id.acceptButton);
+        Button declineButton = changingView.findViewById(R.id.declineButton);
+
+        acceptButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED
+                        && ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+
+                    ActivityCompat.requestPermissions(
+                            getActivity(),
+                            new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            REQUEST_CODE_PERMISSIONS);
+                } else {
+                    // Разрешение уже предоставлено
+                    Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    startActivityForResult(intent, 1);
+                    changePhotoDialog.cancel();
+
+                }
+
+
+            }
+        });
+        declineButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(changePhotoDialog != null){
+                    changePhotoDialog.cancel();
+                }
+            }
+        });
+        changingView.setClipToOutline(true);
+        dialog_builder.setView(changingView);
+        changePhotoDialog = dialog_builder.create();
+        changePhotoDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        changePhotoDialog.show();
+    }
     @Override
     public void onSuccess(String message) {
         Handler dn = new Handler();
@@ -157,7 +283,7 @@ public class FragmentAccount extends Fragment implements  FragmentAccountContrac
         this.login = user.name;
         this.password = user.password;
         this.email = user.email;
-        this.avatar = java.util.Base64.getDecoder().decode(user.image);
+        this.userAvatarUrl = user.image;
 
         getActivity().runOnUiThread(new Runnable() {
             @Override
@@ -166,7 +292,7 @@ public class FragmentAccount extends Fragment implements  FragmentAccountContrac
                 login_tv.setText(login);
                 pass_edit.setText(password);
                 email_tb.setText(email);
-                image_ava.setImageBitmap(ImageBitmapHelper.GetImageBitmap(avatar));
+                Picasso.with(getContext()).load(RequestOptions.MainHost+userAvatarUrl).into(image_ava);
             }
         });
 
@@ -175,11 +301,51 @@ public class FragmentAccount extends Fragment implements  FragmentAccountContrac
 
     @Override
     public void onError(String message, String body) {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if(loadingContactDialog != null){
+                    loadingContactDialog.DeleteDialog();
+                }
+            }
+        });
 
     }
 
     @Override
     public void onError(String message) {
-
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if(loadingContactDialog != null){
+                    loadingContactDialog.DeleteDialog();
+                }
+            }
+        });
     }
- }
+
+    @Override
+    public void OnSuccessChangePhoto(String message) {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                changePhotoDialog.cancel();
+                loadingContactDialog.DeleteDialog();
+                Picasso.with(getContext()).load(RequestOptions.MainHost + message).into(image_ava);
+                userAvatarUrl = message;
+            }
+        });
+    }
+
+    @Override
+    public void OnErrorChangePhoto(String message) {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if(loadingContactDialog != null){
+                    loadingContactDialog.DeleteDialog();
+                }
+            }
+        });
+    }
+}

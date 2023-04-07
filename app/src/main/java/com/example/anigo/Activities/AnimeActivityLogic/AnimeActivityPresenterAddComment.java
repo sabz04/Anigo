@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.example.anigo.AuthentificationLogic.Authentification;
 import com.example.anigo.AuthentificationLogic.AuthentificationInterface;
+import com.example.anigo.CommentsActivityLogic.CommentsActivityContract;
 import com.example.anigo.Models.AnimeComment;
 import com.example.anigo.Models.AnimeCommentAddClass;
 import com.example.anigo.Models.FavouriteAddClass;
@@ -24,14 +25,14 @@ public class AnimeActivityPresenterAddComment implements AnimeActivityContract.P
 
     private Context _context;
     private Authentification _authentification;
-    private AnimeActivityContract.View _view;
+    private CommentsActivityContract.View _view;
     private OkHttpClient _okHttpClient;
 
     private int _animeId;
     private String _animeComment;
 
 
-    public AnimeActivityPresenterAddComment(Context context, AnimeActivityContract.View view) {
+    public AnimeActivityPresenterAddComment(Context context, CommentsActivityContract.View view) {
         this._context = context;
         this._view = view;
         this._okHttpClient = new OkHttpClient();
@@ -86,9 +87,7 @@ public class AnimeActivityPresenterAddComment implements AnimeActivityContract.P
             public void onResponse(Call call, Response response) throws IOException {
                 String json_body = response.body().string();
                 if(response.code() == 201 || response.code() == 200 || response.code() == 204){
-
                     _view.OnSuccessAddComment(json_body);
-
                 }
                 else {
                     _view.OnErrorAddComment(json_body);

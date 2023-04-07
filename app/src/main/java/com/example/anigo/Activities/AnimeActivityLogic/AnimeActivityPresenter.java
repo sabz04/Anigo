@@ -5,6 +5,7 @@ import android.content.Context;
 import com.example.anigo.Models.Anime;
 import com.example.anigo.AuthentificationLogic.Authentification;
 import com.example.anigo.AuthentificationLogic.AuthentificationInterface;
+import com.example.anigo.Models.AnimeResponseWithCommentCount;
 import com.example.anigo.RequestsHelper.RequestOptions;
 import com.example.anigo.Models.Screenshot;
 import com.google.gson.Gson;
@@ -82,9 +83,9 @@ public class AnimeActivityPresenter implements AnimeActivityContract.Presenter, 
                 String json_body = response.body().string();
                 if(response.code() == 201 || response.code() == 200 || response.code() == 204){
 
-                    Anime anime = gson.fromJson(json_body, Anime.class);
+                    AnimeResponseWithCommentCount animeResponseWithCommentCount = gson.fromJson(json_body, AnimeResponseWithCommentCount.class);
                     System.out.printf("2");
-                    view.OnSuccess(anime);
+                    view.OnSuccess(animeResponseWithCommentCount);
 
                 }
                 else {

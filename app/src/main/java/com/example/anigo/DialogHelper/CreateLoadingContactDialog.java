@@ -45,7 +45,6 @@ public class CreateLoadingContactDialog {
             this.loading_dialog.show();
     }
     public void DeleteDialog(){
-        Handler hnd = new Handler();
             if(loading_dialog!= null)
                     loading_dialog.cancel();
     }

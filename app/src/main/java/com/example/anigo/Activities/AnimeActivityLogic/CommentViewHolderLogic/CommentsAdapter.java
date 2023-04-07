@@ -20,7 +20,9 @@ import com.example.anigo.Models.AnimeComment;
 import com.example.anigo.Models.CommentLiked;
 import com.example.anigo.MyApp;
 import com.example.anigo.R;
+import com.example.anigo.RequestsHelper.RequestOptions;
 import com.example.anigo.UiHelper.ImageBitmapHelper;
+import com.squareup.picasso.Picasso;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -102,15 +104,13 @@ public class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
             comment = comments.get(position);
 
-            Bitmap userPosterBitmap = ImageBitmapHelper
-                    .GetImageBitmap(ImageBitmapHelper.GetByteArrayFromString(comment.user.image));
-            //конвертация в простейший формат даты
+           //конвертация в простейший формат даты
             DateFormat dateTargetFormat = new SimpleDateFormat("dd MMMM yyyy, в HH:mm");
             String parsedDate = dateTargetFormat.format(comment.date);
             commentDateTextView.setText(parsedDate);
-            userNameTextView.setText(comment.user.name + "ID " + comment.id);
+            userNameTextView.setText(comment.user.name);
             commentTextView.setText(comment.comment);
-            userPoster.setImageBitmap(userPosterBitmap);
+            Picasso.with(context).load(RequestOptions.MainHost + comment.user.image).fit().centerCrop().into(userPoster);
             likedCount.setText(String.valueOf(comment.commentLikeds.length));
 
             if (comment.userId == userId) {
@@ -196,7 +196,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
     @Override
     public int getItemCount() {
-        return comments.size();
+        return comments.size()+1;
     }
 
     public ArrayList<AnimeComment> getData(){

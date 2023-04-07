@@ -13,4 +13,10 @@
     <color name="red">#fc0303</color>
     <color name="text_color">#ECECEC</color>
     <color name="icon_color">#494444</color>
+    <color name="yellow">#FFFF00</color>
+    <color name="relaxGray">#CEC9C9</color>
+    <color name="testgray">#818181</color>
+    <color name="testred">#de4752</color>
+    <color name="DescFont">#363636</color>
+
 </resources>

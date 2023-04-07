@@ -2,6 +2,7 @@ package com.example.anigo.Activities.AnimeActivityLogic;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -10,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.Editable;
@@ -17,18 +19,27 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 /*import com.wefika.flowlayout.FlowLayout;*/
 
 import com.example.anigo.Activities.AnimeActivityLogic.CommentViewHolderLogic.CommentsAdapter;
+import com.example.anigo.Activities.AnimesFiltredActivityLogic.AnimesFiltredActivity;
 import com.example.anigo.Activities.NavigationActivityLogic.NavigationActivity;
 import com.example.anigo.CommentsActivityLogic.CommentsActivity;
+import com.example.anigo.GridAdaptersLogic.GridAdapter;
 import com.example.anigo.Models.Anime;
 import com.example.anigo.Models.AnimeComment;
+import com.example.anigo.Models.AnimeRate;
+import com.example.anigo.Models.AnimeResponseWithCommentCount;
+import com.example.anigo.Models.CheckUserAcvitity;
+import com.example.anigo.Models.RateResponse;
+import com.example.anigo.RequestsHelper.RequestOptions;
 import com.example.anigo.UiHelper.FlowLayout;
 import com.example.anigo.Models.Genre;
 import com.example.anigo.UiHelper.ImageBitmapHelper;
@@ -36,10 +47,13 @@ import com.example.anigo.R;
 import com.example.anigo.Models.Screenshot;
 import com.example.anigo.Models.Studio;
 import com.example.anigo.UiHelper.TextViewHelper;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityContract.View{
@@ -48,8 +62,8 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
     private AnimeActivityPresenterAddToFavs presenter_fav;
     private AnimeActivityPresenterCheckIfExist presenter_check;
     private AnimeActivityPresenterDeleteFromFav presenter_delete;
-    private AnimeActivityPresenterGetComments presenterGetComments;
-    private AnimeActivityPresenterAddComment _presenterAddComment;
+    private AnimeActivityGetFranchizeAnimesPresenter presenterFranchize;
+    private AnimeActivityPresenterSetRate presenterSetRate;
     private Context context;
 
     private AlertDialog favouriteAddDialog;
@@ -59,24 +73,39 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
     private Button add_to_fav;
     private Button delete_from_fav_btn;
     private Button _showTextViewBtn;
+    private Button oneButton;
+    private Button twoButton;
+    private Button threeButton;
+    private Button fourButton;
+    private Button fiveButton;
+    private ArrayList<Button> rateButtonsList = new ArrayList<>();
     private ImageView poster;
     private Button _addCommentBtn;
     private Button openCommentsActivityButton;
+    private Button commentButton;
+    private RatingBar ratingBar;
 
+    private TextView anigoScore;
     private TextView name_rus_tv;
-    private TextView name_eng_tv;
+    private TextView nameEnglishTextView;
+    private TextView nameJapaneseTextView;
     private TextView description_tv;
     private TextView date_tv;
+    private TextView ratesCount;
     private TextView score_tv;
     private TextView type_tv;
+    private TextView favsCountTextView;
+    private TextView episodesCountTextView;
     private EditText _commentTextView;
+    private TextView commentsCountTextView;
 
     private FlowLayout genres_layout;
     private FlowLayout studios_layout;
     private LinearLayout screenshots_layout;
     private LinearLayout _posterBackgroundLayout;
     private RecyclerView _commentsGridView;
-
+    private RecyclerView gridViewAnimesFr;
+    private AnimeFrAdapter adapterAnimes;
 
     private int anime_id=-1;
     private Date anime_released_on;
@@ -101,7 +130,7 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
                 finish();
             }
         });
-
+        favsCountTextView = findViewById(R.id.favsCountTextView);
         like_btn        = findViewById(R.id.like_btn);
         poster          = findViewById(R.id.itemPoster);
         name_rus_tv     = findViewById(R.id.itemName);
@@ -112,38 +141,54 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
         genres_layout   = findViewById(R.id.genres_layout);
         studios_layout  = findViewById(R.id.studios_layout);
         context         = getApplicationContext();
-        _addCommentBtn = findViewById(R.id.add_comment_btn);
-        _commentTextView = findViewById(R.id.comment_edit_text);
-        openCommentsActivityButton = findViewById(R.id.commentsActivityShowButton);
+        nameEnglishTextView = findViewById(R.id.itemNameEnglish);
+        nameJapaneseTextView = findViewById(R.id.itemNameJapanese);
+        commentButton = findViewById(R.id.commentButton);
+        commentsCountTextView = findViewById(R.id.commentsCountTextView);
+        episodesCountTextView = findViewById(R.id.episodesCountTextView);
+        gridViewAnimesFr = findViewById(R.id.gridView);
+        ratingBar = findViewById(R.id.ratingBar);
+        ratesCount = findViewById(R.id.countOfRates);
+        anigoScore = findViewById(R.id.anigoScore);
+        /*oneButton = findViewById(R.id.oneButton);
+        twoButton = findViewById(R.id.twoButton);
+        threeButton = findViewById(R.id.threeButton);
+        fourButton = findViewById(R.id.fourButton);
+        fiveButton = findViewById(R.id.fiveButton);*/
+        /*rateButtonsList.add(oneButton);
+        rateButtonsList.add(twoButton);
+        rateButtonsList.add(threeButton);
+        rateButtonsList.add(fourButton);
+        rateButtonsList.add(fiveButton);*/
+
+        //openCommentsActivityButton = findViewById(R.id.commentsActivityShowButton);
 
         presenter        = new AnimeActivityPresenter(this, context);
         presenter_fav    = new AnimeActivityPresenterAddToFavs(this, context);
         presenter_delete = new AnimeActivityPresenterDeleteFromFav(this,context);
-        presenterGetComments = new AnimeActivityPresenterGetComments(context, this);
-        _presenterAddComment = new AnimeActivityPresenterAddComment(context, this);
+        presenterFranchize = new AnimeActivityGetFranchizeAnimesPresenter(this,this);
+        presenterSetRate = new AnimeActivityPresenterSetRate(this, this);
+
+        ratingBar.setMax(5);
+        ratingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
+            @Override
+            public void onRatingChanged(RatingBar ratingBar, float v, boolean b) {
+                presenterSetRate.SetRating(anime_id, (int)v);
+            }
+        });
 
         _posterBackgroundLayout = findViewById(R.id.poster_background_layout);
         _showTextViewBtn = findViewById(R.id.show_btn);
-
-        _commentsGridView = findViewById(R.id.comments_grid_view);
-
-
-        _addCommentBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                _presenterAddComment.AddComment(_commentTextView.getText().toString(), anime_id);
-            }
-        });
-        openCommentsActivityButton.setOnClickListener(new View.OnClickListener() {
+        commentButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 NavigationActivity.CommentsPagination.clear();
                 Intent intent = new Intent(AnimeActivity.this, CommentsActivity.class);
                 intent.putExtra("animeId", anime_id);
                 startActivity(intent);
-
             }
         });
+
 
         description_tv.addTextChangedListener(new TextWatcher() {
             @Override
@@ -186,6 +231,16 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
 
         presenter.GetAnime(id);
     }
+    private void setButtonRateColorRed(Button button){
+        for (Button btn:
+             rateButtonsList) {
+            if(btn != button){
+                btn.setBackgroundDrawable(ContextCompat.getDrawable(context, R.drawable.ic_baseline_star_24));
+            }
+
+        }
+    }
+
     private void CreateNewContactDialog_AddToFav() {
         AlertDialog.Builder dialog_builder = new AlertDialog.Builder(this);
         View fav_dialog = getLayoutInflater().inflate(R.layout.dialog_add_to_favs, null);
@@ -228,22 +283,28 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
         dialog_delete.show();
     }
     @Override
-    public void OnSuccess(Anime anime) {
-        this.anime_id   = anime.shikiId;
+    public void OnSuccess(AnimeResponseWithCommentCount animeResponseWithCommentCount) {
+        Anime anime = animeResponseWithCommentCount.anime;
+        this.anime_id   = Integer.valueOf(anime.shikiId);
         presenter_check = new AnimeActivityPresenterCheckIfExist(this, context);
         presenter_check.Check(anime.shikiId);
-
-        presenterGetComments.GetComments(anime_id);
-
-        _posterAnime = ImageBitmapHelper.GetImageBitmap(ImageBitmapHelper.GetByteArrayFromString(anime.images[0].original));
+        presenterFranchize.GetAnimes(anime.franchize.name);
        runOnUiThread(new Runnable() {
            @Override
            public void run() {
-               poster.setImageBitmap(_posterAnime);
+               Picasso.with(context).load(RequestOptions.SecondHost+anime.images[0].original).into(poster);
                name_rus_tv.setText(anime.nameRus);
                description_tv.setText(anime.description);
-               score_tv.setText(String.valueOf(anime.scoreShiki));
+               score_tv.setText(String.valueOf(anime.scoreShiki)+"/10");
+               nameEnglishTextView.setText(anime.nameEng);
+               String aniScore = average(anime.animeRates) + "/5";
+               anigoScore.setText(aniScore);
+               ratesCount.setText(anime.animeRates.length + " оценок");
+               nameJapaneseTextView.setText(anime.japaneses[0].name);
                type_tv.setText(AnimeTypeOrganizer.Organizer(anime.type.name));
+               type_tv.setPaintFlags(type_tv.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+               commentsCountTextView.setText(String.valueOf(animeResponseWithCommentCount.commentsCount));
+               episodesCountTextView.setText(anime.episodes + " эп.");
                anime_released_on  = anime.releasedOn;
                if(anime_released_on != null){
                    Calendar calendar = Calendar.getInstance();
@@ -261,17 +322,31 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
                    );
                }
                for(Studio studio : anime.studios){
-                   studios_layout.addView(
-                           TextViewHelper.Create_New_TextView_Template(
-                                   context,
-                                   studio.name,
-                                   AnimeActivity.this)
-                   );
+                   TextView txt = TextViewHelper.Create_New_TextView_Template(
+                           context,
+                           studio.name,
+                           AnimeActivity.this);
+                   txt.setOnClickListener(new View.OnClickListener() {
+                       @Override
+                       public void onClick(View view) {
+                           Intent intent = new Intent(AnimeActivity.this, AnimesFiltredActivity.class);
+                           intent.putExtra("filter", studio.name);
+                           intent.putExtra("identificator", 0);
+                           startActivity(intent);
+                       }
+                   });
+                   studios_layout.addView(txt);
                }
            }
        });
     }
-
+    public static float average(AnimeRate[] arr) {
+        int sum = 0;
+        for (int i = 0; i < arr.length; i++) {
+            sum += arr[i].rate.value;
+        }
+        return (float) sum / arr.length;
+    }
     private String GetDate(int month){
         if(month == 1){
             return "Январь";
@@ -317,6 +392,7 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
             @Override
             public void run() {
                 add_to_fav.setEnabled(true);
+                favsCountTextView.setText(message);
                 Toast.makeText(context, message, Toast.LENGTH_LONG).show();
             }
         });
@@ -329,7 +405,8 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
             @Override
             public void run() {
                 favouriteAddDialog.cancel();
-                like_btn.setBackgroundDrawable(ContextCompat.getDrawable(context, R.drawable.liked));
+                favsCountTextView.setText(fav_added);
+                like_btn.setBackgroundDrawable(ContextCompat.getDrawable(context, R.drawable.ic_baseline_bookmark_added_24));
                 like_btn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -348,7 +425,7 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
             public void run() {
                 for(Screenshot screen : screenshots){
                     screenshots_layout.addView(ImageBitmapHelper.CreateNewCardViewTemplate(
-                            ImageBitmapHelper.GetByteArrayFromString(screen.image),
+                            RequestOptions.SecondHost + screen.image,
                             context
                     ));
                 }
@@ -357,12 +434,13 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
     }
 
     @Override
-    public void OnSuccessCheck(String msg_is_has) {
+    public void OnSuccessCheck(CheckUserAcvitity checkUserAcvitity) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-
-                like_btn.setBackgroundDrawable(ContextCompat.getDrawable(context, R.drawable.liked));
+                favsCountTextView.setText(String.valueOf(checkUserAcvitity.favsCount));
+                ratingBar.setRating(checkUserAcvitity.userRate);
+                like_btn.setBackgroundDrawable(ContextCompat.getDrawable(context, R.drawable.ic_baseline_bookmark_added_24));
                 like_btn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -374,8 +452,15 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
     }
 
     @Override
-    public void OnErrorCheck(String msg_is_has) {
-        like_btn.setBackgroundDrawable(ContextCompat.getDrawable(context, R.drawable.like));
+    public void OnErrorCheck(CheckUserAcvitity checkUserAcvitity) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ratingBar.setRating(checkUserAcvitity.userRate);
+                favsCountTextView.setText(String.valueOf(checkUserAcvitity.favsCount));
+            }
+        });
+        like_btn.setBackgroundDrawable(ContextCompat.getDrawable(context, R.drawable.ic_baseline_bookmark_border_24));
         like_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -390,10 +475,10 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-
+             favsCountTextView.setText(deleted_message);
             }
         });
-        like_btn.setBackgroundDrawable(ContextCompat.getDrawable(context, R.drawable.like));
+        like_btn.setBackgroundDrawable(ContextCompat.getDrawable(context, R.drawable.ic_baseline_bookmark_border_24));
         like_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -404,8 +489,13 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
 
     @Override
     public void OnErrorDelete(String undeleted_message) {
-
-        like_btn.setBackgroundDrawable(ContextCompat.getDrawable(context, R.drawable.liked));
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                favsCountTextView.setText(undeleted_message);
+            }
+        });
+        like_btn.setBackgroundDrawable(ContextCompat.getDrawable(context, R.drawable.ic_baseline_bookmark_added_24));
         like_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -413,48 +503,63 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
             }
         });
     }
+
     @Override
-    public void OnSuccessGetComments(int pages, int currentPage, int currentPageItemCount,AnimeComment[] listComments, int userId) {
-        ArrayList<AnimeComment> animeComments = new ArrayList<>();
-        for (AnimeComment comment:
-             listComments) {
-            animeComments.add(comment);
+    public void OnSuccessGetLinkedAnimes(Anime[] animes) {
+        if(animes.length > 0){
+            Anime[] newArray = new Anime[animes.length-1];
+            int j=0;
+            for (int i = 0; i < animes.length; i++) {
+                if (animes[i].shikiId != anime_id) {
+                    newArray[j] = animes[i]; // copy the element to the new array
+                    j++; // increment the index for the new array
+                }
+            }
+            adapterAnimes = new AnimeFrAdapter(newArray,this, anime_id);
+
+            adapterAnimes.setOnItemClickListener(new AnimeFrAdapter.OnItemClickListener() {
+                @Override
+                public void OnClick(int position) {
+                    Intent to_anime = new Intent(context, AnimeActivity.class);
+                    Bundle bundle = new Bundle();
+                    int id = newArray[position].shikiId;
+                    bundle.putInt("id", id);
+                    to_anime.putExtras(bundle);
+                    startActivity(to_anime);
+                }
+            });
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    gridViewAnimesFr.setLayoutManager(new LinearLayoutManager(context,LinearLayoutManager.VERTICAL,true));
+                    gridViewAnimesFr.setAdapter(adapterAnimes);
+
+                }
+            });
         }
-        CommentsAdapter commentRecyclerAdapter = new CommentsAdapter(animeComments, userId, this);
 
+
+    }
+
+    @Override
+    public void OnErrorGetLinkedAnimes(String message) {
+
+    }
+
+    @Override
+    public void OnSuccessSetRate(RateResponse rateResponse) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                _commentsGridView.setLayoutManager(new LinearLayoutManager(context));
-                _commentsGridView.setAdapter(commentRecyclerAdapter);
+                anigoScore.setText(String.valueOf(rateResponse.averageRate)+ "/5");
+                ratesCount.setText(rateResponse.totalRateCount + " оценок");
             }
         });
     }
 
     @Override
-    public void OnErrorGetComments(String errorMessage) {
-
-    }
-
-    @Override
-    public void OnSuccessAddComment(String message) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
-            }
-        });
-        presenterGetComments.GetComments(anime_id);
-    }
-
-    @Override
-    public void OnErrorAddComment(String message) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
-            }
-        });
+    public void OnErrorSetRate(String message) {
 
     }
 

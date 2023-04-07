@@ -1,5 +1,6 @@
 package com.example.anigo.GridAdaptersLogic;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -14,6 +15,8 @@ import androidx.cardview.widget.CardView;
 
 import com.example.anigo.Models.Anime;
 import com.example.anigo.R;
+import com.example.anigo.RequestsHelper.RequestOptions;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -61,7 +64,9 @@ public class GridAdapter extends BaseAdapter {
             view = inflater.inflate(R.layout.grid_item, null);
         }
 
-        Bitmap poster = GetImageBitmap(java.util.Base64.getDecoder().decode(anime.images[0].preview));
+
+
+
         CardView cardView = (CardView) view.findViewById(R.id.view2);
 
         TextView textView = (TextView) view.findViewById(R.id.item_name);
@@ -72,7 +77,9 @@ public class GridAdapter extends BaseAdapter {
 
         TextView tViewScoreType = (TextView) view.findViewById(R.id.item_score_type);
 
-        img.setImageBitmap(poster);
+        Picasso.with(context).load(RequestOptions.SecondHost+anime.images[0].preview).into(img);
+
+
 
         textView.setText(anime.nameRus);
         String desc = "";

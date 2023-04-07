@@ -16,6 +16,7 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 
 import com.example.anigo.Activities.AnimeActivityLogic.AnimeActivity;
+import com.example.anigo.Activities.AnimeActivityLogic.AnimeFrAdapter;
 import com.example.anigo.GridAdaptersLogic.FragmentLikedGridAdapter;
 import com.example.anigo.GridAdaptersLogic.GridAdapter;
 import com.example.anigo.Models.Anime;
@@ -37,6 +38,7 @@ public class HomeFragment extends Fragment implements HomeFragmentContract.View{
     private SwipeRefreshLayout swp;
     private GridView grd_animes;
     private GridAdapter grid_adapter;
+    private AnimeFrAdapter animeAdapter;
     private View current_view;
     private Context context;
 

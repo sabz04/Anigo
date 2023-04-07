@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Activities.AnimeActivityLogic.AnimeActivity">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:layout_gravity="left"
+            android:id="@+id/back_btn"
+            app:layout_column="0"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:textSize="17dp"
+            android:background="@drawable/ic_baseline_navigate_before_24"
+            android:layout_marginLeft="25dp"
+            android:layout_margin="15dp"
+            ></Button>
+        <ScrollView
+            android:layout_width="match_parent"
+            android:id="@+id/main_scroll_view"
+            android:layout_height="wrap_content">
+            <LinearLayout
+                android:orientation="vertical"
+                android:padding="15dp"
+
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/itemName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Ковбой Бибоп! Вперед, страна!"
+
+
+                    android:fontFamily="@font/roboto_regular"
+                    android:textAlignment="textStart"
+                    android:textColor="@android:color/black"
+                    android:textSize="22dp"></TextView>
+                <TextView
+                    android:id="@+id/itemNameJapanese"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Японское название."
+
+                    android:drawablePadding="10dp"
+                    android:fontFamily="@font/roboto_regular"
+                    android:textAlignment="textStart"
+                    android:textColor="@android:color/black"
+                    android:textSize="15dp"></TextView>
+
+                <TextView
+                    android:id="@+id/itemNameEnglish"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Английское название."
+
+                    android:drawablePadding="10dp"
+                    android:fontFamily="@font/roboto_regular"
+                    android:textAlignment="textStart"
+                    android:textColor="@android:color/black"
+                    android:textSize="15dp"></TextView>
+                <LinearLayout
+                    android:id="@+id/poster_background_layout"
+                    android:gravity="center"
+
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <androidx.cardview.widget.CardView
+                        android:layout_gravity="center"
+                        android:layout_width="210dp"
+                        android:layout_margin="10dp"
+                        android:layout_height="300dp"
+                        app:cardElevation="10dp"
+                        app:cardUseCompatPadding="true"
+                        app:cardPreventCornerOverlap="false"
+                        android:id="@+id/view2"
+                        app:cardCornerRadius="10dp"
+                        android:layout_centerHorizontal="true"
+                        android:background="@android:color/transparent"
+                        android:shape="rectangle"
+                        android:thicknessRatio="1.9">
+                        <ImageView
+                            android:id="@+id/itemPoster"
+                            android:scaleType="fitXY"
+                            android:layout_gravity="center"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            />
+                    </androidx.cardview.widget.CardView>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_gravity="right"
+                    android:layout_height="wrap_content">
+                    <Button
+                        android:background="@drawable/ic_baseline_star_outline_24"
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
+                        android:id="@+id/like_btn"
+
+                        app:layout_column="2"
+                        android:layout_marginRight="25dp"
+                        ></Button>
+                    <TextView
+                        android:textSize="16dp"
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:id="@+id/favsCountTextView"
+                        android:gravity="center_vertical"
+                        ></TextView>
+
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:text="Оценка Шикимори: "
+                            android:layout_height="wrap_content"></TextView>
+                        <TextView
+                            android:id="@+id/itemScore"
+                            android:textColor="@color/black"
+                            android:fontFamily="@font/roboto_regular"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"></TextView>
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:text="Дата выхода: "
+                            android:layout_height="wrap_content"></TextView>
+                        <TextView
+                            android:id="@+id/item_date"
+                            android:textColor="@color/black"
+
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"></TextView>
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:text="Тип: "
+                            android:layout_height="wrap_content"></TextView>
+                        <TextView
+                            android:textColor="@color/black"
+                            android:id="@+id/itemType"
+                            android:textSize="16dp"                           android:fontFamily="@font/roboto_regular"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"></TextView>
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:text="Жанры: "
+                            android:layout_height="wrap_content"></TextView>
+
+                        <com.example.anigo.UiHelper.FlowLayout
+
+                            android:id="@+id/genres_layout"
+                            android:orientation="horizontal"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content">
+
+                        </com.example.anigo.UiHelper.FlowLayout>
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:text="Студии: "
+                            android:layout_height="wrap_content"></TextView>
+
+                        <com.example.anigo.UiHelper.FlowLayout
+
+                            android:id="@+id/studios_layout"
+                            android:orientation="horizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+
+                        </com.example.anigo.UiHelper.FlowLayout>
+                    </LinearLayout>
+                </LinearLayout>
+                <TextView
+
+                    android:layout_marginRight="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="20dp"
+                    android:text="Скриншоты"
+                    android:fontFamily="@font/roboto_regular"/>
+                <HorizontalScrollView
+                    android:layout_gravity="left"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <LinearLayout
+
+                        android:layout_gravity="center"
+                        android:orientation="horizontal"
+                        android:id="@+id/screenshotsLayout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"></LinearLayout>
+                </HorizontalScrollView>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:fontFamily="@font/roboto_regular"
+                    android:text="Описание"
+                    android:textSize="20dp" />
+
+                <TextView
+                    android:id="@+id/itemDesc"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+
+                    android:layout_marginTop="5dp"
+                    android:layout_marginEnd="5dp"
+
+                    android:layout_marginBottom="5dp"
+                    android:fontFamily="@font/roboto_regular"
+                    android:maxHeight="200dp"
+                    android:textColor="@color/black"
+                    android:textSize="17dp">
+
+                </TextView>
+                <Button
+
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/show_btn"
+                    android:layout_gravity="center"
+                    android:background="@drawable/my_button"
+                    android:fontFamily="@font/roboto_regular"
+                    android:text="Раскрыть"
+                    android:textColor="@color/nicered"
+                    android:textAllCaps="false"
+                    android:textSize="15dp"></Button>
+                <Button
+
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/commentsActivityShowButton"
+                    android:layout_gravity="center"
+                    android:background="@drawable/my_button"
+                    android:fontFamily="@font/roboto_regular"
+                    android:text="Комментарии"
+                    android:textColor="@color/nicered"
+                    android:textAllCaps="false"
+                    android:textSize="15dp"></Button>
+
+            </LinearLayout>
+        </ScrollView>
+
+    </LinearLayout>
+
+
+
+</RelativeLayout>

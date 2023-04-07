@@ -97,10 +97,12 @@
             <Button
                 android:id="@+id/button_exit"
                 android:layout_gravity="center"
+                android:fontFamily="@font/roboto_regular"
+                android:textAllCaps="false"
 
                 android:width="150dp"
-                android:textColor="@color/white"
-                android:backgroundTint="@color/nicered"
+                android:textColor="@color/nicered"
+                android:background="@android:color/transparent"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Выход" />

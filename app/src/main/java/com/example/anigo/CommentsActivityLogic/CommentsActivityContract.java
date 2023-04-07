@@ -8,9 +8,10 @@ public interface CommentsActivityContract {
     interface View{
         void OnSuccessGetComments(AnimeCommentResponse response, int userId);
         void OnError(String message);
-
+        void OnSuccessAddComment(String message);
+        void OnErrorAddComment(String message);
     }
     interface Presenter{
-        void GetComments(int currentPage, int animeId);
+        void GetComments(int currentPage, int animeId, String sortKey);
     }
 }

@@ -13,8 +13,9 @@
         android:id="@+id/loadMoreButton"
         android:layout_gravity="center"
         android:gravity="center"
+        android:fontFamily="@font/roboto_regular"
         android:background="@android:color/transparent"
         android:textColor="@color/nicered"
-        android:textSize="16dp"
+        android:textSize="13dp"
         android:layout_height="wrap_content"></Button>
 </LinearLayout>

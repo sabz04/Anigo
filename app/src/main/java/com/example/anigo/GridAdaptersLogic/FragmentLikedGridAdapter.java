@@ -11,9 +11,11 @@ import android.widget.TextView;
 
 import androidx.cardview.widget.CardView;
 
+import com.example.anigo.RequestsHelper.RequestOptions;
 import com.example.anigo.UiHelper.ImageBitmapHelper;
 import com.example.anigo.Models.Favourite;
 import com.example.anigo.R;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -57,7 +59,9 @@ public class FragmentLikedGridAdapter extends BaseAdapter {
             view = inflater.inflate(R.layout.fragment_liked_grid_item, null);
         }
 
-        Bitmap poster = ImageBitmapHelper.GetImageBitmap(java.util.Base64.getDecoder().decode(fav.anime.images[0].preview));
+
+
+
         CardView cardView = (CardView) view.findViewById(R.id.view2);
 
         TextView textView = (TextView) view.findViewById(R.id.item_name);
@@ -81,7 +85,7 @@ public class FragmentLikedGridAdapter extends BaseAdapter {
         }
         comment_tv.setText(comment);
 
-        img.setImageBitmap(poster);
+        Picasso.with(context).load(RequestOptions.SecondHost+fav.anime.images[0].preview).into(img);
 
         textView.setText(fav.anime.nameRus);
         String desc = "";

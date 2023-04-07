@@ -12,9 +12,15 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.anigo.Activities.AnimeActivityLogic.AnimeActivityPresenterAddComment;
 import com.example.anigo.Activities.AnimeActivityLogic.CommentViewHolderLogic.CommentDeletePresenter;
 import com.example.anigo.Activities.AnimeActivityLogic.CommentViewHolderLogic.CommentLikePresenter;
 import com.example.anigo.Activities.AnimeActivityLogic.CommentViewHolderLogic.CommentsAdapter;
@@ -34,12 +40,17 @@ public class CommentsActivity extends AppCompatActivity implements CommentsActiv
 
     RecyclerView commentsRecycler;
     Button backButton;
+    Button addCommentButton;
     Button downloadButton;
     Button gridLikeButton;
     Context context;
+    EditText commentEditText;
     SwipeRefreshLayout swipeRefreshLayout;
     Parcelable recyclerViewScrollState;
+    Spinner spinner;
 
+
+    AnimeActivityPresenterAddComment addCommentPresenter;
     CommentLikePresenter likePresenter;
     CommentDeletePresenter deletePresenter;
     LikeRemovePresenter likeRemovePresenter;
@@ -52,6 +63,8 @@ public class CommentsActivity extends AppCompatActivity implements CommentsActiv
     int animeId;
     int lastPage = -1;
 
+    String[] sortNames = {"Сначала новее", "Популярные"};
+    String sortKey = "Сначала новее";
 
     int adapterPosition = -1;
     @Override
@@ -66,17 +79,59 @@ public class CommentsActivity extends AppCompatActivity implements CommentsActiv
         context = this;
         //presenter declaration
         presenter = new CommentsActivityPresenter(this,context);
-        presenter.GetComments(currentPage, animeId);
+        presenter.GetComments(currentPage, animeId, sortKey);
         //declate the presenters
         likePresenter = new CommentLikePresenter(this, this);
         deletePresenter = new CommentDeletePresenter(this, this);
         likeRemovePresenter = new LikeRemovePresenter(this, this);
+        addCommentPresenter = new AnimeActivityPresenterAddComment(this, this);
         //get UI elems
         backButton = findViewById(R.id.backButton);
-
+        addCommentButton = findViewById(R.id.add_comment_btn);
+        commentEditText = findViewById(R.id.commentEditText);
         commentsRecycler = findViewById(R.id.commentsRecyclerView);
+        spinner = findViewById(R.id.spinnerSortValues);
         //swipeRefreshLayout = findViewById(R.id.swiperefresh);
         //swipeRefreshLayout.setRefreshing(true);
+
+
+        // Создаем адаптер ArrayAdapter с помощью массива строк и стандартной разметки элемета spinner
+        ArrayAdapter<String> adapter = new ArrayAdapter(this, android.R.layout.simple_spinner_item, sortNames);
+        // Определяем разметку для использования при выборе элемента
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Применяем адаптер к элементу spinner
+        spinner.setAdapter(adapter);
+
+        AdapterView.OnItemSelectedListener itemClickListener = new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                String item = (String)adapterView.getItemAtPosition(i);
+                if(item.contains("Сначала новее")){
+                    sortKey = "SortByDate";
+                    currentPage = 1;
+                    NavigationActivity.CommentsPagination.clear();
+                    recyclerViewAdapter = null;
+                    presenter.GetComments(currentPage, animeId, sortKey);
+                }
+                if(item.contains("Популярные")){
+                    sortKey = "SortByLikes";
+                    currentPage = 1;
+                    NavigationActivity.CommentsPagination.clear();
+                    recyclerViewAdapter = null;
+                    presenter.GetComments(currentPage, animeId, sortKey);
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+
+
+        };
+
+        spinner.setOnItemSelectedListener(itemClickListener);
+
         //set the actions
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -85,6 +140,13 @@ public class CommentsActivity extends AppCompatActivity implements CommentsActiv
             }
         });
 
+        addCommentButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String commentText = commentEditText.getText().toString();
+                addCommentPresenter.AddComment(commentText, animeId);
+            }
+        });
         /*swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -151,7 +213,7 @@ public class CommentsActivity extends AppCompatActivity implements CommentsActiv
                 @Override
                 public void loadMore() {
                     currentPage++;
-                    presenter.GetComments(currentPage, animeId);
+                    presenter.GetComments(currentPage, animeId, sortKey);
                 }
             });
             recyclerViewAdapter.setDeleteClickListener(new CommentsAdapter.deleteButtonItemClickListener() {
@@ -185,7 +247,9 @@ public class CommentsActivity extends AppCompatActivity implements CommentsActiv
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    recyclerViewAdapter.notifyItemInserted(recyclerViewAdapter.getData().size()-1);
+                    recyclerViewAdapter.notifyItemRangeChanged(
+                            (NavigationActivity.CommentsPagination.size()-1)
+                            -response.comments.length, response.comments.length);
                     //swipeRefreshLayout.setRefreshing(false);
                 }
             });
@@ -209,6 +273,27 @@ public class CommentsActivity extends AppCompatActivity implements CommentsActiv
     public void OnError(String message) {
 
     }
+
+    @Override
+    public void OnSuccessAddComment(String message) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+                currentPage = 1;
+                recyclerViewAdapter = null;
+                NavigationActivity.CommentsPagination.clear();
+                presenter.GetComments(currentPage,animeId, sortKey);
+            }
+        });
+
+    }
+
+    @Override
+    public void OnErrorAddComment(String message) {
+
+    }
+
     @Override
     public void OnSuccessAddLike(AnimeComment commentAnime, int position) {
         runOnUiThread(new Runnable() {

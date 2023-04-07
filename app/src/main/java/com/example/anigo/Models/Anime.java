@@ -52,95 +52,33 @@ public class Anime implements Serializable, Parcelable {
 
     public Studio[] studios;
 
-    /* public Japanese[] japaneses;*/
+    public AnimeRate[] animeRates;
 
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(this.id);
-        dest.writeString(this.nameEng);
-        dest.writeString(this.nameRus);
-        dest.writeString(this.description);
-        dest.writeFloat(this.scoreShiki);
-        dest.writeByte(this.ongoing ? (byte) 1 : (byte) 0);
-        dest.writeLong(this.nextEpisodeAt != null ? this.nextEpisodeAt.getTime() : -1);
-        dest.writeInt(this.shikiId);
-        dest.writeInt(this.franchizeId);
-        dest.writeInt(this.typeId);
-        dest.writeInt(this.duration);
-        dest.writeInt(this.episodes);
-        dest.writeLong(this.releasedOn != null ? this.releasedOn.getTime() : -1);
-        dest.writeSerializable(this.franchize);
-        dest.writeParcelable(this.type, flags);
-        dest.writeTypedArray(this.images, flags);
-        dest.writeTypedArray(this.japaneses, flags);
-        dest.writeTypedArray(this.screenshots, flags);
-        dest.writeTypedArray(this.genres, flags);
-        dest.writeTypedArray(this.studios, flags);
-    }
-
-    public void readFromParcel(Parcel source) {
-        this.id = source.readInt();
-        this.nameEng = source.readString();
-        this.nameRus = source.readString();
-        this.description = source.readString();
-        this.scoreShiki = source.readFloat();
-        this.ongoing = source.readByte() != 0;
-        long tmpNextEpisodeAt = source.readLong();
-        this.nextEpisodeAt = tmpNextEpisodeAt == -1 ? null : new Date(tmpNextEpisodeAt);
-        this.shikiId = source.readInt();
-        this.franchizeId = source.readInt();
-        this.typeId = source.readInt();
-        this.duration = source.readInt();
-        this.episodes = source.readInt();
-        long tmpReleasedOn = source.readLong();
-        this.releasedOn = tmpReleasedOn == -1 ? null : new Date(tmpReleasedOn);
-        this.franchize = (Franchize) source.readSerializable();
-        this.type = source.readParcelable(Type.class.getClassLoader());
-        this.images = source.createTypedArray(Image.CREATOR);
-        this.japaneses = source.createTypedArray(Japanese.CREATOR);
-        this.screenshots = source.createTypedArray(Screenshot.CREATOR);
-        this.genres = source.createTypedArray(Genre.CREATOR);
-        this.studios = source.createTypedArray(Studio.CREATOR);
-    }
-
-    public Anime() {
-    }
 
     protected Anime(Parcel in) {
-        this.id = in.readInt();
-        this.nameEng = in.readString();
-        this.nameRus = in.readString();
-        this.description = in.readString();
-        this.scoreShiki = in.readFloat();
-        this.ongoing = in.readByte() != 0;
-        long tmpNextEpisodeAt = in.readLong();
-        this.nextEpisodeAt = tmpNextEpisodeAt == -1 ? null : new Date(tmpNextEpisodeAt);
-        this.shikiId = in.readInt();
-        this.franchizeId = in.readInt();
-        this.typeId = in.readInt();
-        this.duration = in.readInt();
-        this.episodes = in.readInt();
-        long tmpReleasedOn = in.readLong();
-        this.releasedOn = tmpReleasedOn == -1 ? null : new Date(tmpReleasedOn);
-        this.franchize = (Franchize) in.readSerializable();
-        this.type = in.readParcelable(Type.class.getClassLoader());
-        this.images = in.createTypedArray(Image.CREATOR);
-        this.japaneses = in.createTypedArray(Japanese.CREATOR);
-        this.screenshots = in.createTypedArray(Screenshot.CREATOR);
-        this.genres = in.createTypedArray(Genre.CREATOR);
-        this.studios = in.createTypedArray(Studio.CREATOR);
+        id = in.readInt();
+        nameEng = in.readString();
+        nameRus = in.readString();
+        description = in.readString();
+        scoreShiki = in.readFloat();
+        ongoing = in.readByte() != 0;
+        shikiId = in.readInt();
+        franchizeId = in.readInt();
+        typeId = in.readInt();
+        duration = in.readInt();
+        episodes = in.readInt();
+        type = in.readParcelable(Type.class.getClassLoader());
+        images = in.createTypedArray(Image.CREATOR);
+        japaneses = in.createTypedArray(Japanese.CREATOR);
+        screenshots = in.createTypedArray(Screenshot.CREATOR);
+        genres = in.createTypedArray(Genre.CREATOR);
+        studios = in.createTypedArray(Studio.CREATOR);
     }
 
-    public static final Parcelable.Creator<Anime> CREATOR = new Parcelable.Creator<Anime>() {
+    public static final Creator<Anime> CREATOR = new Creator<Anime>() {
         @Override
-        public Anime createFromParcel(Parcel source) {
-            return new Anime(source);
+        public Anime createFromParcel(Parcel in) {
+            return new Anime(in);
         }
 
         @Override
@@ -148,4 +86,30 @@ public class Anime implements Serializable, Parcelable {
             return new Anime[size];
         }
     };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeInt(id);
+        parcel.writeString(nameEng);
+        parcel.writeString(nameRus);
+        parcel.writeString(description);
+        parcel.writeFloat(scoreShiki);
+        parcel.writeByte((byte) (ongoing ? 1 : 0));
+        parcel.writeInt(shikiId);
+        parcel.writeInt(franchizeId);
+        parcel.writeInt(typeId);
+        parcel.writeInt(duration);
+        parcel.writeInt(episodes);
+        parcel.writeParcelable(type, i);
+        parcel.writeTypedArray(images, i);
+        parcel.writeTypedArray(japaneses, i);
+        parcel.writeTypedArray(screenshots, i);
+        parcel.writeTypedArray(genres, i);
+        parcel.writeTypedArray(studios, i);
+    }
 }

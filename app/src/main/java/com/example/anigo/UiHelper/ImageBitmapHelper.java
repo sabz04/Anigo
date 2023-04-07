@@ -9,6 +9,8 @@ import android.widget.LinearLayout;
 
 import androidx.cardview.widget.CardView;
 
+import com.squareup.picasso.Picasso;
+
 public class ImageBitmapHelper {
 
 
@@ -21,14 +23,14 @@ public class ImageBitmapHelper {
         }
     }
 
-    public static CardView CreateNewCardViewTemplate(byte[] src, Context context){
+    public static CardView CreateNewCardViewTemplate(String url, Context context){
         ImageView img = new ImageView(context);
         CardView crd = new CardView(context);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 
-        Bitmap current_bitmap = GetImageBitmap(src);
-        Bitmap new_bitmap = getResizedBitmap(current_bitmap, 500, 295);
-        img.setImageBitmap(new_bitmap);
+
+        Picasso.with(context).load(url).resize(500,295).into(img);
+
 
         lp.setMargins(10, 5, 10, 5);
         crd.setLayoutParams(lp);

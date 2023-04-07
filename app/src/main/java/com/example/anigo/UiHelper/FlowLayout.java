@@ -28,7 +28,7 @@ public class FlowLayout extends ViewGroup {
         TypedArray a = ctx
                 .obtainStyledAttributes(attrs, R.styleable.FlowLayout);
         String H = "12";
-        String V = "10";
+        String V = "0";
         // LOG.d("H = " + H + "V=" + V);
         if (H == null || V == null)
             setPaddings(V == null ? 0 : Integer.parseInt(V), H == null ? 0 :Integer.parseInt(H));

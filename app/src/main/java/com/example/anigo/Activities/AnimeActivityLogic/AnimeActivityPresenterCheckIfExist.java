@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.example.anigo.AuthentificationLogic.Authentification;
 import com.example.anigo.AuthentificationLogic.AuthentificationInterface;
+import com.example.anigo.Models.CheckUserAcvitity;
 import com.example.anigo.RequestsHelper.RequestOptions;
 import com.google.gson.Gson;
 
@@ -79,12 +80,13 @@ public class AnimeActivityPresenterCheckIfExist implements AnimeActivityContract
             public void onResponse(Call call, Response response) throws IOException {
                 String json_body = response.body().string();
                 if(response.code() == 201 || response.code() == 200 || response.code() == 204){
-
-                    view.OnSuccessCheck(json_body);
+                    CheckUserAcvitity checkUserAcvitity = new Gson().fromJson(json_body, CheckUserAcvitity.class);
+                    view.OnSuccessCheck(checkUserAcvitity);
 
                 }
                 else {
-                    view.OnErrorCheck(json_body);
+                    CheckUserAcvitity checkUserAcvitity = new Gson().fromJson(json_body, CheckUserAcvitity.class);
+                    view.OnErrorCheck(checkUserAcvitity);
                 }
 
             }
