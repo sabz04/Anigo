@@ -57,8 +57,18 @@ public class FragmentAccountPresenter implements  FragmentAccountContract.Presen
 
     @Override
     public void AuthSuccess(String token) {
+
+    }
+
+    @Override
+    public void AuthError(String message) {
+
+    }
+
+    @Override
+    public void AuthSuccess(String token, int user_id) {
         Request request = new Request.Builder()
-                .url(String.format(RequestOptions.request_url_user_get, user_local.Login, user_local.Password))
+                .url(String.format(RequestOptions.request_url_user_get,user_id ))
                 .get()
                 .addHeader("Authorization", "Bearer " + token )
                 .build();
@@ -84,15 +94,5 @@ public class FragmentAccountPresenter implements  FragmentAccountContract.Presen
 
             }
         });
-    }
-
-    @Override
-    public void AuthError(String message) {
-
-    }
-
-    @Override
-    public void AuthSuccess(String token, int user_id) {
-
     }
 }

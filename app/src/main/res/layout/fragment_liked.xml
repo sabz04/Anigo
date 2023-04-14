@@ -26,6 +26,24 @@
                 android:textColor="@color/nicered"
                 android:text="Избранное"
                 android:textSize="35dp" />
+            <EditText
+
+                android:singleLine="true"
+                android:id="@+id/searchEditText"
+                android:textColor="@android:color/darker_gray"
+                android:layout_width="match_parent"
+
+                android:layout_height="45dp"
+
+                android:paddingStart="10dp"
+                android:layout_gravity="top"
+                android:background="@drawable/edit_text_back"
+                android:drawableLeft="@drawable/ic_baseline_search_24"
+                android:drawablePadding="10dp"
+                android:hint="Поиск по избранным..."
+
+                android:shadowRadius="10"
+                android:textSize="16dp" />
             <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
                 xmlns:android="http://schemas.android.com/apk/res/android"
                 android:id="@+id/swiperefresh"

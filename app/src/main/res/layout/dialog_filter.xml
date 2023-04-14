@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/rounded_corner_view"
+    android:layout_height="match_parent">
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_marginBottom="60dp"
+        android:layout_height="wrap_content">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="vertical"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_width="wrap_content"
+                android:text="Сортировать по"
+                android:textSize="16dp"
+                android:textColor="@color/nicered"
+                android:fontFamily="@font/roboto_regular"
+                android:layout_height="wrap_content"></TextView>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="5dp"
+                android:layout_gravity="center_vertical"
+                android:background="@color/relaxGray" />
+            <Spinner
+                android:id="@+id/spinnerSortValues"
+                android:layout_width="wrap_content"
+                android:gravity="right"
+
+                android:layout_gravity="center_vertical"
+                android:layout_height="wrap_content"
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:text="Жанры"
+                android:textSize="16dp"
+                android:textColor="@color/nicered"
+                android:fontFamily="@font/roboto_regular"
+                android:layout_height="wrap_content"></TextView>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="5dp"
+                android:layout_gravity="center_vertical"
+                android:background="@color/relaxGray" />
+            <com.example.anigo.UiHelper.FlowLayout
+                android:layout_width="wrap_content"
+                android:id="@+id/genresLayout"
+                android:layout_height="wrap_content"></com.example.anigo.UiHelper.FlowLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:text="Года"
+                android:textSize="16dp"
+                android:textColor="@color/nicered"
+                android:fontFamily="@font/roboto_regular"
+                android:layout_height="wrap_content"></TextView>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="5dp"
+                android:layout_gravity="center_vertical"
+                android:background="@color/relaxGray" />
+            <com.example.anigo.UiHelper.FlowLayout
+                android:layout_width="wrap_content"
+                android:id="@+id/yearsLayout"
+                android:layout_height="wrap_content"></com.example.anigo.UiHelper.FlowLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:text="Тип"
+                android:textColor="@color/nicered"
+                android:textSize="16dp"
+                android:fontFamily="@font/roboto_regular"
+                android:layout_height="wrap_content"></TextView>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="5dp"
+                android:layout_gravity="center_vertical"
+                android:background="@color/relaxGray" />
+
+            <com.example.anigo.UiHelper.FlowLayout
+                android:layout_width="wrap_content"
+                android:id="@+id/typesLayout"
+                android:layout_height="wrap_content"></com.example.anigo.UiHelper.FlowLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:text="Студии"
+                android:textSize="16dp"
+                android:textColor="@color/nicered"
+                android:fontFamily="@font/roboto_regular"
+                android:layout_height="wrap_content"></TextView>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="5dp"
+                android:layout_gravity="center_vertical"
+                android:background="@color/relaxGray" />
+            <com.example.anigo.UiHelper.FlowLayout
+                android:layout_width="wrap_content"
+                android:id="@+id/studiosLayout"
+                android:layout_height="wrap_content"></com.example.anigo.UiHelper.FlowLayout>
+            <Button
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/getStudiosButton"
+                android:layout_gravity="center"
+                android:background="@drawable/my_button"
+                android:fontFamily="@font/roboto_regular"
+                android:text="Загрузить студии"
+                android:textColor="@color/nicered"
+                android:textAllCaps="false"
+                android:textSize="14dp"></Button>
+        </LinearLayout>
+    </ScrollView>
+
+    <Button
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_width="150dp"
+        android:layout_height="35dp"
+        android:id="@+id/acceptButton"
+        android:layout_gravity="center"
+
+        android:background="@color/nicered"
+        android:fontFamily="@font/roboto_regular"
+        android:text="Применить"
+        android:textColor="@color/white"
+        android:textAllCaps="false"
+        android:textSize="14dp"></Button>
+</RelativeLayout>

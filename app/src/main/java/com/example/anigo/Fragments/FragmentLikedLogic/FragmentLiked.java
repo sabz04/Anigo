@@ -10,12 +10,16 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.os.Parcelable;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.TextView;
 
 import com.example.anigo.Activities.AnimeActivityLogic.AnimeActivity;
 import com.example.anigo.Models.Favourite;
@@ -38,6 +42,7 @@ public class FragmentLiked extends Fragment implements FragmentLikedContract.Vie
     private GridView grd;
     private static Parcelable scroll_state;
     private Context context;
+    private EditText searchEditText;
 
     private static int current_page=1;
     private static int last_seen_elem = -1;
@@ -85,15 +90,29 @@ public class FragmentLiked extends Fragment implements FragmentLikedContract.Vie
         grd = view.findViewById(R.id.gridView);
         context = getContext();
         swp.setRefreshing(false);
-
-
+        searchEditText = view.findViewById(R.id.searchEditText);
+        searchEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH
+                        || actionId == EditorInfo.IME_ACTION_DONE
+                        || actionId == EditorInfo.IME_ACTION_NEXT) {
+                    swp.setRefreshing(true);
+                    NavigationActivity.favourites_pagination.clear();
+                    current_page=1;
+                    presenter.GetFavs(current_page, searchEditText.getText().toString());
+                    return true;
+                }
+                return false;
+            }
+        });
 
         swp.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 swp.setRefreshing(true);
                 ClearPageConfig();
-                presenter.GetFavs(current_page);
+                presenter.GetFavs(current_page, searchEditText.getText().toString());
             }
         });
 
@@ -111,7 +130,7 @@ public class FragmentLiked extends Fragment implements FragmentLikedContract.Vie
                 if (last_seen >= totalItemCount-1){
                     swp.setRefreshing(true);
                     current_page++;
-                    presenter.GetFavs(current_page);
+                    presenter.GetFavs(current_page,searchEditText.getText().toString());
                     last_seen_elem = last_seen;
                 }
             }
@@ -132,7 +151,7 @@ public class FragmentLiked extends Fragment implements FragmentLikedContract.Vie
 
         if (NavigationActivity.favourites_pagination.size() < 1){
             swp.setRefreshing(true);
-            presenter.GetFavs(current_page);
+            presenter.GetFavs(current_page,searchEditText.getText().toString());
         }
         else {
             _setGridAdapter(NavigationActivity.favourites_pagination);

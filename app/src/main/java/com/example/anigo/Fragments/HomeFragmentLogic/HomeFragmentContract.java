@@ -1,6 +1,7 @@
 package com.example.anigo.Fragments.HomeFragmentLogic;
 
 import com.example.anigo.Models.Anime;
+import com.example.anigo.Models.FilterObject;
 
 public interface HomeFragmentContract {
     interface View{
@@ -9,6 +10,6 @@ public interface HomeFragmentContract {
         void OnError(String error);
     }
     interface Presenter{
-        void GetFavs(int page);
+        void GetFavs(FilterObject filterObject);
     }
 }

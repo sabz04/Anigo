@@ -5,6 +5,8 @@ import android.content.Context;
 import com.example.anigo.AuthentificationLogic.Authentification;
 import com.example.anigo.AuthentificationLogic.AuthentificationInterface;
 import com.example.anigo.Models.AnimeResponse;
+import com.example.anigo.Models.FavouriteAddClass;
+import com.example.anigo.Models.FilterObject;
 import com.example.anigo.RequestsHelper.RequestOptions;
 import com.google.gson.Gson;
 
@@ -12,8 +14,10 @@ import java.io.IOException;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class HomeFragmentPresenter implements HomeFragmentContract.Presenter, AuthentificationInterface.Listener {
@@ -24,6 +28,7 @@ public class HomeFragmentPresenter implements HomeFragmentContract.Presenter, Au
     private int page =-1;
     private HomeFragmentContract.View view;
     private Authentification authentification;
+    private FilterObject  filterObject;
 
     public HomeFragmentPresenter(HomeFragmentContract.View view, Context context) {
         this.context = context;
@@ -32,8 +37,8 @@ public class HomeFragmentPresenter implements HomeFragmentContract.Presenter, Au
     }
 
     @Override
-    public void GetFavs(int page) {
-        this.page = page;
+    public void GetFavs(FilterObject filterObject) {
+        this.filterObject = filterObject;
         authentification = new Authentification(this, this.context);
         authentification.Auth();
     }
@@ -50,9 +55,16 @@ public class HomeFragmentPresenter implements HomeFragmentContract.Presenter, Au
 
     @Override
     public void AuthSuccess(String token, int user_id) {
+
+        //converting to json
+        String json = new Gson().toJson(filterObject);
+
+        RequestBody formBody = RequestBody.create(
+                MediaType.parse("application/json"), json);
+
         Request request = new Request.Builder()
-                .url(String.format(RequestOptions.request_url_get_popular,this.page))
-                .get()
+                .url(String.format(RequestOptions.request_url_animes_get))
+                .post(formBody)
                 .addHeader("Authorization", "Bearer " + token )
                 .build();
         Call call = client.newCall(request);

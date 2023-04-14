@@ -3,6 +3,7 @@ package com.example.anigo.Fragments.SearchFragmentLogic;
 import android.content.Context;
 
 import com.example.anigo.Models.Anime;
+import com.example.anigo.Models.FilterObject;
 
 public interface SearchFragmentContract {
     interface View {
@@ -13,6 +14,6 @@ public interface SearchFragmentContract {
     }
     interface Presenter{
         void Search(String search);
-        void Search(String search, int page, Context context);
+        void Search(FilterObject filterObject, Context context);
     }
 }

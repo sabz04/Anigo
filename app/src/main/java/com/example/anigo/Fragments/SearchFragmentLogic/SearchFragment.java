@@ -1,9 +1,14 @@
 package com.example.anigo.Fragments.SearchFragmentLogic;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.provider.MediaStore;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,10 +16,18 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -23,10 +36,25 @@ import com.example.anigo.GridAdaptersLogic.FragmentLikedGridAdapter;
 import com.example.anigo.GridAdaptersLogic.GridAdapter;
 import com.example.anigo.Models.Anime;
 import com.example.anigo.Activities.NavigationActivityLogic.NavigationActivity;
+import com.example.anigo.Models.AnimeFilterData;
+import com.example.anigo.Models.AnimeResponse;
 import com.example.anigo.Models.Favourite;
+import com.example.anigo.Models.FilterObject;
+import com.example.anigo.Models.StudiosResponse;
 import com.example.anigo.R;
+import com.example.anigo.RequestsHelper.RequestOptions;
+import com.example.anigo.UiHelper.FlowLayout;
+import com.example.anigo.UiHelper.TextViewHelper;
+import com.google.gson.Gson;
 
+import java.io.IOException;
 import java.util.ArrayList;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 
 public class SearchFragment extends Fragment implements SearchFragmentContract.View {
@@ -35,17 +63,23 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
     private static Parcelable state;
 
     private static int last_seen_elem = -1;
-    private static int current_page = 1;
+
     private static int page_count = -1;
     private static String search_text = "";
+    private Button filterButton;
 
     private SwipeRefreshLayout swp;
     private EditText editText_search;
     private GridView grd;
     private Context context;
-
+    private AlertDialog filterDialog;
+    private FilterObject filterObject;
     private View current_view;
+    private Spinner spinner;
+    OkHttpClient client;
+    private  int studiosPage = 1;
 
+    String[] sortNames = {"Популярные", "Лучшие оценки"};
     public SearchFragment() {
 
     }
@@ -62,7 +96,10 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if(savedInstanceState != null){
-            current_page = savedInstanceState.getInt("current_page");
+
+
+            filterObject = savedInstanceState.getParcelable("filters");
+
             page_count = savedInstanceState.getInt("page_count");
             search_text = savedInstanceState.getString("editText_search");
             state = savedInstanceState.getParcelable("grid");
@@ -79,8 +116,8 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
             state = grd.onSaveInstanceState();
             search_text = editText_search.getText().toString();
         }
+        outState.putSerializable("filters", filterObject);
         outState.putString("editText_search", search_text);
-        outState.putInt("current_page", current_page);
         outState.putInt("page_count", page_count);
         outState.putParcelable("grid", state);
     }
@@ -89,12 +126,26 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
                              Bundle savedInstanceState) {
         current_view = inflater.inflate(R.layout.fragment_search, container, false);
         context = getContext();
+        client = new OkHttpClient();
+        filterObject = new FilterObject();
+        filterObject.Page = 1;
         presenter = new SearchFragmentPresenter(this,context);
 
         grd = current_view.findViewById(R.id.gridView);
         swp = (SwipeRefreshLayout) current_view.findViewById(R.id.swiperefresh);
         swp.setColorSchemeResources(R.color.nicered);
         swp.setRefreshing(false);
+        filterButton = current_view.findViewById(R.id.filterButton);
+        filterButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                CreateNewFilterDialog();
+            }
+        });
+
+
+
+
 
         editText_search = (EditText) current_view.findViewById(R.id.edit_search);
         editText_search.setText(search_text);
@@ -114,8 +165,8 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
 
                 if (last_seen >= totalItemCount-1){
                     swp.setRefreshing(true);
-                    current_page++;
-                    presenter.Search(editText_search.getText().toString(), current_page, context);;
+                    filterObject.Page++;
+                    presenter.Search(filterObject, context);;
                     last_seen_elem = last_seen;
                 }
 
@@ -143,7 +194,8 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
                                 || actionId == EditorInfo.IME_ACTION_NEXT) {
                         ClearPaginationConfig();
                         swp.setRefreshing(true);
-                        presenter.Search(editText_search.getText().toString(), current_page, context);
+                        filterObject.Search = editText_search.getText().toString();
+                        presenter.Search(filterObject, context);
                     return true;
                 }
                 return false;
@@ -155,7 +207,8 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
             public void onRefresh() {
                 ClearPaginationConfig();
                 swp.setRefreshing(true);
-                presenter.Search(editText_search.getText().toString(), current_page, getContext());
+                filterObject.Search = editText_search.getText().toString();
+                presenter.Search(filterObject, getContext());
             }
         });
 
@@ -163,10 +216,224 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
 
         return current_view;
     }
+
+    private void CreateNewFilterDialog() {
+        if(filterDialog!=null){
+            filterDialog.show();
+            return;
+        }
+        AlertDialog.Builder dialog_builder = new AlertDialog.Builder(getContext());
+        View filterView = getLayoutInflater().inflate(R.layout.dialog_filter, null);
+
+        Button acceptButton = filterView.findViewById(R.id.acceptButton);
+        FlowLayout genresLayout = filterView.findViewById(R.id.genresLayout);
+        FlowLayout yearsLayout = filterView.findViewById(R.id.yearsLayout);
+        FlowLayout typesLayout = filterView.findViewById(R.id.typesLayout);
+        FlowLayout studiosLayout = filterView.findViewById(R.id.studiosLayout);
+        Button getStudiosButton = filterView.findViewById(R.id.getStudiosButton);
+
+        getStudiosButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Request request = new Request.Builder()
+                        .url(String.format(RequestOptions.request_url_get_studios,studiosPage))
+                        .get()
+                        .build();
+                Call call = client.newCall(request);
+
+                call.enqueue(new Callback() {
+                    @Override
+                    public void onFailure(Call call, IOException e) {
+
+                    }
+
+                    @Override
+                    public void onResponse(Call call, Response response) throws IOException {
+                        String jsonBody = response.body().string();
+                        if(response.code() == 200){
+                            studiosPage++;
+                            StudiosResponse studiosResponse = new Gson().fromJson(jsonBody, StudiosResponse.class);
+                            for (String studio:
+                                    studiosResponse.studios){
+                                CheckBox studioCheckBox = new CheckBox(getContext());
+                                studioCheckBox.setText(studio);
+                                studioCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                                    @Override
+                                    public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                                        if(b){
+                                            filterObject.Studios.add(studio);
+                                        } else {
+                                            if(filterObject.Studios.contains(studio)){
+                                                filterObject.Studios.remove(studio);
+                                            }
+                                        }
+                                    }
+                                });
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        studiosLayout.addView(studioCheckBox);
+                                    }
+                                });
+
+                            }
+                        }
+                    }
+                });
+            }
+        });
+
+        spinner = filterView.findViewById(R.id.spinnerSortValues);
+        // Создаем адаптер ArrayAdapter с помощью массива строк и стандартной разметки элемета spinner
+        ArrayAdapter<String> adapter = new ArrayAdapter(getContext(), android.R.layout.simple_spinner_item, sortNames);
+        // Определяем разметку для использования при выборе элемента
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Применяем адаптер к элементу spinner
+        spinner.setAdapter(adapter);
+
+        AdapterView.OnItemSelectedListener itemClickListener = new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                String item = (String)adapterView.getItemAtPosition(i);
+                if(item.contains("Лучшие оценки")){
+                    filterObject.SortKey = "SortByRate";
+                }
+                if(item.contains("Популярные")){
+                    filterObject.SortKey = "SortByPopular";
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+
+
+        };
+        spinner.setOnItemSelectedListener(itemClickListener);
+        acceptButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ClearPaginationConfig();
+                presenter.Search(filterObject, getContext());
+                filterDialog.cancel();
+            }
+        });
+
+
+        Request request = new Request.Builder()
+                .url(String.format(RequestOptions.request_url_get_filter_data))
+                .get()
+                .build();
+        Call call = client.newCall(request);
+
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String response_body = response.body().string();
+                if(response.code() == 200){
+                    AnimeFilterData filterData = new Gson().fromJson(response_body, AnimeFilterData.class);
+
+                    for (String genre:
+                         filterData.genres) {
+                        CheckBox genreCheckBox = new CheckBox(getContext());
+
+                        genreCheckBox.setText(genre);
+                        genreCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                            @Override
+                            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                                if(isChecked){
+                                    filterObject.Genres.add(genre);
+                                }
+                                else {
+                                    if(filterObject.Genres.contains(genre)){
+                                        filterObject.Genres.remove(genre);
+                                    }
+                                }
+                            }
+                        });
+
+                        genresLayout.addView(genreCheckBox);
+                    }
+
+                    for (int year:
+                            filterData.years) {
+                        String yearString = String.valueOf(year);
+                        CheckBox yearCheckBox = new CheckBox(getContext());
+                        yearCheckBox.setText(yearString);
+                        yearCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                            @Override
+                            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                                if(b){
+                                    filterObject.Years.add(year);
+                                } else {
+                                    if(filterObject.Years.contains(year)){
+                                        filterObject.Years.remove((Object)year);
+                                        for (int i =0; i< filterObject.Years.size();i++) {
+                                            if(filterObject.Years.get(i) == year){
+                                                filterObject.Years.remove(i);
+                                            }
+
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        yearsLayout.addView(yearCheckBox);
+                    }
+                    for (String type:
+                            filterData.types) {
+                        CheckBox typeCheckBox = new CheckBox(getContext());
+                        typeCheckBox.setText(type);
+                        typeCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                            @Override
+                            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                                if(b){
+                                    filterObject.Type.add(type);
+                                }
+                                else {
+                                    if(filterObject.Type.contains(type)){
+                                        filterObject.Type.remove(type);
+                                    }
+                                }
+                            }
+                        });
+                        typesLayout.addView(typeCheckBox);
+                    }
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            filterView.setClipToOutline(true);
+
+                            dialog_builder.setView(filterView);
+                            filterDialog = dialog_builder.create();
+
+                            filterDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                            filterDialog.show();
+                        }
+                    });
+
+                }
+                else {
+
+                }
+            }
+        });
+
+
+
+    }
+
     public void ClearPaginationConfig(){
         swp.setRefreshing(false);
         NavigationActivity.animes_pagination.clear();
-        current_page=1;
+        studiosPage=1;
+        filterObject.Page=1;
         page_count=-1;
         state =null;
     }
@@ -191,10 +458,11 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
     @Override
     public void onSuccess(String message, Anime[] animes, int currentpage, int pagecount) {
         this.page_count = pagecount;
-        this.current_page = currentpage;
+        this.filterObject.Page = currentpage;
 
         if (currentpage > pagecount){
             swp.setRefreshing(false);
+            _setGridAdapter(NavigationActivity.animes_pagination, false);
             return;
         }
 

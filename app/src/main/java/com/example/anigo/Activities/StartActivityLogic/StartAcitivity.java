@@ -23,13 +23,10 @@ public class StartAcitivity extends AppCompatActivity implements Authentificatio
         setContentView(R.layout.activity_start_acitivity);
         auth = new Authentification(this, getApplicationContext());
         auth.Auth();
-
-
     }
 
     @Override
     public void AuthSuccess(String message) {
-
         intent = new Intent(StartAcitivity.this, NavigationActivity.class);
         startActivity(intent);
         finish();

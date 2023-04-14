@@ -21,6 +21,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.os.Handler;
@@ -35,18 +37,29 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.anigo.Activities.AnimeActivityLogic.AnimeActivity;
+import com.example.anigo.Activities.AnimeAdapter;
 import com.example.anigo.Activities.CodeSendActivityLogic.CodeSendActivity;
 import com.example.anigo.DialogHelper.CreateLoadingContactDialog;
+import com.example.anigo.Models.Anime;
 import com.example.anigo.RequestsHelper.RequestOptions;
 import com.example.anigo.UiHelper.ImageBitmapHelper;
 import com.example.anigo.Activities.MainActivityLogic.MainActivity;
 import com.example.anigo.Models.User;
 import com.example.anigo.Activities.NavigationActivityLogic.NavigationActivity;
 import com.example.anigo.R;
+import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Paths;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -60,9 +73,11 @@ public class FragmentAccount extends Fragment implements  FragmentAccountContrac
     private EditText pass_edit;
     private EditText email_tb;
     private TextView login_tv;
+    private int userId = -1;
     private Button exit;
     private ImageView image_ava;
     private SwipeRefreshLayout swp;
+    RecyclerView recyclerView;
     private FragmentAccountContract.Presenter presenter;
     CreateLoadingContactDialog loadingContactDialog;
 
@@ -93,6 +108,8 @@ public class FragmentAccount extends Fragment implements  FragmentAccountContrac
             login = savedInstanceState.getString("login");
             password = savedInstanceState.getString("password");
             email = savedInstanceState.getString("email");
+            presenter = new FragmentAccountPresenter(this, getContext());
+            presenter.GetUser();
         }
 
 
@@ -123,6 +140,8 @@ public class FragmentAccount extends Fragment implements  FragmentAccountContrac
         email_tb = view.findViewById(R.id.post_tb);
         pass_edit = view.findViewById(R.id.password_tb);
         image_ava = view.findViewById(R.id.user_image);
+        recyclerView = view.findViewById(R.id.historyRecyclerView);
+
 
         launcher = registerForActivityResult(new ActivityResultContracts.GetContent(), new ActivityResultCallback<Uri>() {
             @Override
@@ -279,12 +298,59 @@ public class FragmentAccount extends Fragment implements  FragmentAccountContrac
 
     @Override
     public void onSuccess(User user) {
-
+        this.userId = user.id;
         this.login = user.name;
         this.password = user.password;
         this.email = user.email;
         this.userAvatarUrl = user.image;
+        OkHttpClient client = new OkHttpClient();
 
+        Request request = new Request.Builder()
+
+                .url(String.format(RequestOptions.request_url_get_history,userId))
+                .get()
+                .build();
+        Call call = client.newCall(request);
+
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String json_body = response.body().string();
+                if(response.code() == 201 || response.code() == 200 || response.code() == 204){
+                    Anime[] animes = new Gson().fromJson(json_body, Anime[].class);
+                    AnimeAdapter adapter = new AnimeAdapter(animes);
+                    adapter.setOnItemClickListener(new AnimeAdapter.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(int position) {
+                            Intent to_anime = new Intent(getActivity(), AnimeActivity.class);
+                            Bundle bundle = new Bundle();
+                            int id = animes[position].shikiId;
+                            bundle.putInt("id", id);
+                            to_anime.putExtras(bundle);
+                            startActivity(to_anime);
+                        }
+                    });
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+                            recyclerView.setAdapter(adapter);
+
+                        }
+                    });
+
+                }
+                else {
+
+                }
+
+            }
+        });
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {

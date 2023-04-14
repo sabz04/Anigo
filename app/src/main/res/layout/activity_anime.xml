@@ -76,35 +76,36 @@
 
                 <LinearLayout
                     android:id="@+id/poster_background_layout"
-                    android:gravity="center"
-
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+
+                    android:layout_height="wrap_content"
+                    android:gravity="center">
+
                     <androidx.cardview.widget.CardView
-                        android:layout_gravity="center"
-                        android:layout_width="210dp"
-                        android:layout_margin="10dp"
-                        android:layout_height="300dp"
-
-
-                        app:cardPreventCornerOverlap="false"
                         android:id="@+id/view2"
-                        app:cardCornerRadius="10dp"
+                        android:layout_width="210dp"
+                        android:layout_height="300dp"
                         android:layout_centerHorizontal="true"
+
+
+                        android:layout_gravity="center"
+                        android:layout_margin="10dp"
                         android:background="@android:color/transparent"
                         android:shape="rectangle"
-                        android:thicknessRatio="1.9">
+                        android:thicknessRatio="1.9"
+                        app:cardCornerRadius="10dp"
+                        app:cardPreventCornerOverlap="false">
+
                         <ImageView
                             android:id="@+id/itemPoster"
-                            android:scaleType="fitXY"
-                            android:layout_gravity="center"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            />
+                            android:layout_gravity="center"
+                            android:scaleType="fitXY" />
                     </androidx.cardview.widget.CardView>
                 </LinearLayout>
 
-               <LinearLayout
+                <LinearLayout
                    android:layout_width="wrap_content"
                    android:orientation="horizontal"
                    android:layout_gravity="right"
@@ -212,6 +213,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"></TextView>
                     </LinearLayout>
+
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -315,6 +317,15 @@
                         </com.example.anigo.UiHelper.FlowLayout>
                     </LinearLayout>
                 </LinearLayout>
+                <Button
+                    android:id="@+id/watchButton"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_width="match_parent"
+                    android:text="Смотреть"
+                    android:textColor="@color/white"
+                    android:background="@color/nicered"
+                    android:layout_height="35dp"></Button>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_marginTop="5dp"

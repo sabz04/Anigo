@@ -24,6 +24,7 @@ public class FragmentLikedPresenter implements FragmentLikedContract.Presenter ,
     private Context _context;
 
     private int page = -1;
+    private String searchText;
 
     public FragmentLikedPresenter(FragmentLikedContract.View view, Context context) {
         this._view = view;
@@ -33,8 +34,9 @@ public class FragmentLikedPresenter implements FragmentLikedContract.Presenter ,
 
 
     @Override
-    public void GetFavs(int page) {
+    public void GetFavs(int page, String searchText) {
         this.page = page;
+        this.searchText = searchText;
         _authentification = new Authentification(this, this._context);
         _authentification.Auth();
     }
@@ -51,7 +53,7 @@ public class FragmentLikedPresenter implements FragmentLikedContract.Presenter ,
     @Override
     public void AuthSuccess(String token, int user_id) {
         Request request = new Request.Builder()
-                .url(String.format(RequestOptions.request_url_get_favs,this.page, user_id))
+                .url(String.format(RequestOptions.request_url_get_favs,this.page, user_id, searchText))
                 .get()
                 .addHeader("Authorization", "Bearer " + token )
                 .build();

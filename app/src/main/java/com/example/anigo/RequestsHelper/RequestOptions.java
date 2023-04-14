@@ -12,14 +12,14 @@ public class RequestOptions {
     public static String SecondHost = "https://kawai.shikimori.one";
     public static String request_url_login              = MainHost + "/api/Login";
     public static String request_url_register           = MainHost + "/api/Login/Register";
-    public static String request_url_animes_get         = MainHost + "/api/Anime/GetAnimes?page=%d&search=%s";
+    public static String request_url_animes_get         = MainHost + "/api/Anime/GetAnimes";
     public static String request_url_anime_get          = MainHost + "/api/Anime/GetAnime?id=";
-    public static String request_url_user_get           = MainHost + "/api/Administration/GetUserByCredentials?login=%s&password=%s";
+    public static String request_url_user_get           = MainHost + "/api/Administration/GetUserByCredentials?userId=%d";
     public static String request_url_screens_get        = MainHost + "/api/Anime/GetAnimeScreens?id=";
     public static String request_url_add_to_favs        = MainHost + "/api/User/AddFavourite";
     public static String request_url_check_in_fav       = MainHost + "/api/User/CheckFav?anime_id=%d&user_id=%d";
     public static String request_url_delete_from_fav    = MainHost + "/api/User/DeleteFromFav?anime_id=%d&user_id=%d";
-    public static String request_url_get_favs           = MainHost + "/api/User/GetFavs?page=%d&user_id=%d";
+    public static String request_url_get_favs           = MainHost + "/api/User/GetFavs?page=%d&user_id=%d&search=%s";
     public static String request_url_get_code           = MainHost + "/api/Login/GetCode?email=";
     public static String request_url_change_pass        = MainHost + "/api/Login/ChangePass?email=%s&password=%s";
     public static String request_url_get_popular        = MainHost + "/api/Anime/GetPopular?page=%d";
@@ -32,6 +32,11 @@ public class RequestOptions {
     public static String request_url_get_animes_by_studio = MainHost + "/api/Anime/GetAnimesByStudio?page=%d&studioName=%s";
     public static String request_url_change_photo = MainHost+ "/api/User/UploadAvatar?userId=";
     public static String request_url_set_rating = MainHost+ "/api/Anime/SetAnimeRating?animeId=%d&userId=%d&ratingValue=%d";
+    public static String request_url_get_filter_data = MainHost + "/api/Anime/GetAnimeFilterData";
+    public static String request_url_kodik_watch_anime = "https://kodikapi.com/search?token=%s&with_page_links=true&shikimori_id=%d";
+    public static String request_url_get_history = MainHost + "/api/User/GetHistory?userId=%d";
+    public static String request_url_add_history = MainHost + "/api/User/AddHistory?userId=%d&animeId=%d";
+    public static String request_url_get_studios = MainHost + "/api/Anime/GetStudiosPagination?page=%d";
 
     public static Bitmap downloadImage(String urlStringWithoutHost) {
         try {

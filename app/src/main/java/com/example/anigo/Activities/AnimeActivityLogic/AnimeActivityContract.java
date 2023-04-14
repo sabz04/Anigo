@@ -9,7 +9,7 @@ import com.example.anigo.Models.Screenshot;
 
 public interface AnimeActivityContract {
     interface View {
-        void OnSuccess(AnimeResponseWithCommentCount animeResponseWithCommentCount);
+        void OnSuccess(AnimeResponseWithCommentCount animeResponseWithCommentCount, int userId);
         void OnError(String message);
         void OnSuccess(String message);
         void OnSuccess(Screenshot[] screenshots);

@@ -8,6 +8,6 @@ public interface FragmentLikedContract {
         void OnError(String message);
     }
     interface Presenter{
-        void GetFavs(int page);
+        void GetFavs(int page, String searchText);
     }
 }

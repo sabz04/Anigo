@@ -22,6 +22,7 @@ import com.example.anigo.GridAdaptersLogic.GridAdapter;
 import com.example.anigo.Models.Anime;
 import com.example.anigo.Activities.NavigationActivityLogic.NavigationActivity;
 import com.example.anigo.Models.Favourite;
+import com.example.anigo.Models.FilterObject;
 import com.example.anigo.R;
 
 import java.util.ArrayList;
@@ -41,8 +42,9 @@ public class HomeFragment extends Fragment implements HomeFragmentContract.View{
     private AnimeFrAdapter animeAdapter;
     private View current_view;
     private Context context;
+    FilterObject filterObject;
 
-    private static int current_page=1, last_seen_elem = -1, page_count = -1;
+    private static int last_seen_elem = -1, page_count = -1;
 
     public HomeFragment() {
 
@@ -59,8 +61,8 @@ public class HomeFragment extends Fragment implements HomeFragmentContract.View{
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if(savedInstanceState != null){
-            current_page = savedInstanceState.getInt("current_page", current_page);
-            page_count = savedInstanceState.getInt("page_count", page_count);
+            filterObject.Page = savedInstanceState.getInt("current_page");
+            page_count = savedInstanceState.getInt("page_count");
             state = savedInstanceState.getParcelable("grid_state");
         }
     }
@@ -68,8 +70,8 @@ public class HomeFragment extends Fragment implements HomeFragmentContract.View{
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         state = grd_animes.onSaveInstanceState();
+        outState.putInt("current_page", filterObject.Page);
         outState.putParcelable("grid_state", state);
-        outState.putInt("current_page", current_page);
         outState.putInt("page_count", page_count );
     }
     @Override
@@ -80,6 +82,10 @@ public class HomeFragment extends Fragment implements HomeFragmentContract.View{
         grd_animes = current_view.findViewById(R.id.gridView);
         swp = current_view.findViewById(R.id.swiperefresh);
         swp.setColorSchemeResources(R.color.nicered);
+
+        filterObject =  new FilterObject();
+        filterObject.SortKey = "SortByPopular";
+        filterObject.Page = 1;
 
         context = getContext();
         presenter = new HomeFragmentPresenter(this, context);
@@ -100,7 +106,7 @@ public class HomeFragment extends Fragment implements HomeFragmentContract.View{
             public void onRefresh() {
                 swp.setRefreshing(true);
                 ClearPageConfig();
-                presenter.GetFavs(current_page);
+                presenter.GetFavs(filterObject);
             }
         });
 
@@ -119,8 +125,8 @@ public class HomeFragment extends Fragment implements HomeFragmentContract.View{
 
                 if (last_seen >= totalItemCount-1){
                     swp.setRefreshing(true);
-                    current_page++;
-                    presenter.GetFavs(current_page);
+                    filterObject.Page++;
+                    presenter.GetFavs(filterObject);
                     last_seen_elem = last_seen;
                 }
             }
@@ -135,14 +141,14 @@ public class HomeFragment extends Fragment implements HomeFragmentContract.View{
 
         if(NavigationActivity.animes_pagination_popular.size() < 1){
             swp.setRefreshing(true);
-            presenter.GetFavs(current_page);
+            presenter.GetFavs(filterObject);
         }
 
         return current_view;
     }
 
     private void ClearPageConfig(){
-        this.current_page = 1;
+        this.filterObject.Page = 1;
         NavigationActivity.animes_pagination_popular.clear();
         state = null;
         last_seen_elem = -1;
@@ -156,7 +162,7 @@ public class HomeFragment extends Fragment implements HomeFragmentContract.View{
     @Override
     public void OnSuccess(Anime[] animes, int current_page, int page_count) {
         this.page_count = page_count;
-        this.current_page = current_page;
+        this.filterObject.Page = current_page;
 
         if (current_page > page_count){
             swp.setRefreshing(false);

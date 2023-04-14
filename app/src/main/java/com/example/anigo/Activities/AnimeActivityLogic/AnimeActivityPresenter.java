@@ -85,7 +85,7 @@ public class AnimeActivityPresenter implements AnimeActivityContract.Presenter, 
 
                     AnimeResponseWithCommentCount animeResponseWithCommentCount = gson.fromJson(json_body, AnimeResponseWithCommentCount.class);
                     System.out.printf("2");
-                    view.OnSuccess(animeResponseWithCommentCount);
+                    view.OnSuccess(animeResponseWithCommentCount, user_id);
 
                 }
                 else {

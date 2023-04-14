@@ -31,6 +31,7 @@ import android.widget.Toast;
 import com.example.anigo.Activities.AnimeActivityLogic.CommentViewHolderLogic.CommentsAdapter;
 import com.example.anigo.Activities.AnimesFiltredActivityLogic.AnimesFiltredActivity;
 import com.example.anigo.Activities.NavigationActivityLogic.NavigationActivity;
+import com.example.anigo.AnimeWatchActivity;
 import com.example.anigo.CommentsActivityLogic.CommentsActivity;
 import com.example.anigo.GridAdaptersLogic.GridAdapter;
 import com.example.anigo.Models.Anime;
@@ -49,12 +50,19 @@ import com.example.anigo.Models.Studio;
 import com.example.anigo.UiHelper.TextViewHelper;
 import com.squareup.picasso.Picasso;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityContract.View{
 
@@ -74,6 +82,7 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
     private Button delete_from_fav_btn;
     private Button _showTextViewBtn;
     private Button oneButton;
+    private Button animeWatchButton;
     private Button twoButton;
     private Button threeButton;
     private Button fourButton;
@@ -107,7 +116,7 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
     private RecyclerView gridViewAnimesFr;
     private AnimeFrAdapter adapterAnimes;
 
-    private int anime_id=-1;
+    private int anime_id=-1, userId =-1;
     private Date anime_released_on;
     private final int _maxLines = 3;
     private boolean _isExpanded = false;
@@ -130,6 +139,7 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
                 finish();
             }
         });
+        animeWatchButton = findViewById(R.id.watchButton);
         favsCountTextView = findViewById(R.id.favsCountTextView);
         like_btn        = findViewById(R.id.like_btn);
         poster          = findViewById(R.id.itemPoster);
@@ -150,17 +160,42 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
         ratingBar = findViewById(R.id.ratingBar);
         ratesCount = findViewById(R.id.countOfRates);
         anigoScore = findViewById(R.id.anigoScore);
-        /*oneButton = findViewById(R.id.oneButton);
-        twoButton = findViewById(R.id.twoButton);
-        threeButton = findViewById(R.id.threeButton);
-        fourButton = findViewById(R.id.fourButton);
-        fiveButton = findViewById(R.id.fiveButton);*/
-        /*rateButtonsList.add(oneButton);
-        rateButtonsList.add(twoButton);
-        rateButtonsList.add(threeButton);
-        rateButtonsList.add(fourButton);
-        rateButtonsList.add(fiveButton);*/
+       animeWatchButton.setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View view) {
+               Intent intent = new Intent(AnimeActivity.this, AnimeWatchActivity.class);
+               intent.putExtra("animeId",anime_id);
+               startActivity(intent);
 
+               OkHttpClient client = new OkHttpClient();
+               Request request = new Request.Builder()
+
+                       .url(String.format(RequestOptions.request_url_add_history,userId, anime_id))
+                       .get()
+                       .build();
+               Call call = client.newCall(request);
+
+               call.enqueue(new Callback() {
+                   @Override
+                   public void onFailure(Call call, IOException e) {
+
+                   }
+
+                   @Override
+                   public void onResponse(Call call, Response response) throws IOException {
+                       String json_body = response.body().string();
+                       if(response.code() == 201 || response.code() == 200 || response.code() == 204){
+
+                       }
+                       else {
+
+                       }
+
+                   }
+               });
+
+           }
+       });
         //openCommentsActivityButton = findViewById(R.id.commentsActivityShowButton);
 
         presenter        = new AnimeActivityPresenter(this, context);
@@ -283,7 +318,8 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
         dialog_delete.show();
     }
     @Override
-    public void OnSuccess(AnimeResponseWithCommentCount animeResponseWithCommentCount) {
+    public void OnSuccess(AnimeResponseWithCommentCount animeResponseWithCommentCount, int userId) {
+        this.userId = userId;
         Anime anime = animeResponseWithCommentCount.anime;
         this.anime_id   = Integer.valueOf(anime.shikiId);
         presenter_check = new AnimeActivityPresenterCheckIfExist(this, context);
@@ -326,15 +362,6 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
                            context,
                            studio.name,
                            AnimeActivity.this);
-                   txt.setOnClickListener(new View.OnClickListener() {
-                       @Override
-                       public void onClick(View view) {
-                           Intent intent = new Intent(AnimeActivity.this, AnimesFiltredActivity.class);
-                           intent.putExtra("filter", studio.name);
-                           intent.putExtra("identificator", 0);
-                           startActivity(intent);
-                       }
-                   });
                    studios_layout.addView(txt);
                }
            }

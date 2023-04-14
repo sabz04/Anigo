@@ -8,6 +8,7 @@ import com.example.anigo.DateDeserializer;
 import com.example.anigo.InnerDatabaseLogic.FeedUserDbHelper;
 import com.example.anigo.InnerDatabaseLogic.FeedUserLocal;
 import com.example.anigo.Models.AnimeResponse;
+import com.example.anigo.Models.FilterObject;
 import com.example.anigo.RequestsHelper.RequestOptions;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -17,8 +18,10 @@ import java.util.Date;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class SearchFragmentPresenter implements  SearchFragmentContract.Presenter, AuthentificationInterface.Listener{
@@ -35,6 +38,7 @@ public class SearchFragmentPresenter implements  SearchFragmentContract.Presente
     private String search = "";
 
     int page = -1;
+    private FilterObject filterObject;
 
     public SearchFragmentPresenter(SearchFragmentContract.View view, Context context){
         this.view = view;
@@ -49,27 +53,34 @@ public class SearchFragmentPresenter implements  SearchFragmentContract.Presente
     }
 
     @Override
-    public void Search(String search, int page, Context context) {
+    public void Search(FilterObject filterObject, Context context) {
         authentification =new Authentification(this, this.context);
-        this.search = search;
-        this.page = page;
+        this.filterObject = filterObject;
         authentification.Auth();
     }
 
     @Override
     public void AuthSuccess(String token) {
-        user_local = db_helper.CheckIfExist();
-        if(user_local == null){
-            view.onError("Пользователь не авторизован!");
-            return;
-        }
-        else{
-            this.login = user_local.Login;
-            this.password = user_local.Password;
-        }
+
+
+
+    }
+
+    @Override
+    public void AuthError(String message) {
+        view.onError(message);
+    }
+
+    @Override
+    public void AuthSuccess(String token, int user_id) {
+        String json = new Gson().toJson(filterObject);
+
+        RequestBody formBody = RequestBody.create(
+                MediaType.parse("application/json"), json);
+
         Request request = new Request.Builder()
-                .url(String.format(RequestOptions.request_url_animes_get,page, search))
-                .get()
+                .url(String.format(RequestOptions.request_url_animes_get))
+                .post(formBody)
                 .addHeader("Authorization", "Bearer " + token )
                 .build();
         Call call = client.newCall(request);
@@ -82,27 +93,16 @@ public class SearchFragmentPresenter implements  SearchFragmentContract.Presente
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                if(response.code() == 200){
-                    String response_body = response.body().string();
-                    AnimeResponse response_animes = new Gson().fromJson(response_body, AnimeResponse.class);
-                    view.onSuccess("Поиск успешен.", response_animes.animes, response_animes.currentPage, response_animes.pages);
+                String json_body = response.body().string();
+                if(response.code() == 201 || response.code() == 200 || response.code() == 204){
+                    AnimeResponse animeResponse = new Gson().fromJson(json_body, AnimeResponse.class);
+                    view.onSuccess("ok",animeResponse.animes, animeResponse.currentPage, animeResponse.pages);
                 }
                 else {
-                   view.onError(response.message());
+                    view.onError(json_body);
                 }
+
             }
         });
-
-
-    }
-
-    @Override
-    public void AuthError(String message) {
-        view.onError(message);
-    }
-
-    @Override
-    public void AuthSuccess(String token, int user_id) {
-
     }
 }
