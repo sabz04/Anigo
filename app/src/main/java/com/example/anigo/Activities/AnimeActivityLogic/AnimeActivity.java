@@ -94,6 +94,8 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
     private Button commentButton;
     private RatingBar ratingBar;
 
+    private TextView screensTextView;
+    private TextView franchizeTextView;
     private TextView anigoScore;
     private TextView name_rus_tv;
     private TextView nameEnglishTextView;
@@ -139,6 +141,8 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
                 finish();
             }
         });
+        franchizeTextView = findViewById(R.id.franchizeTextView);
+        screensTextView = findViewById(R.id.screensTextView);
         animeWatchButton = findViewById(R.id.watchButton);
         favsCountTextView = findViewById(R.id.favsCountTextView);
         like_btn        = findViewById(R.id.like_btn);
@@ -317,8 +321,10 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
         dialog_delete.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         dialog_delete.show();
     }
+    String animeRate = "0";
     @Override
     public void OnSuccess(AnimeResponseWithCommentCount animeResponseWithCommentCount, int userId) {
+
         this.userId = userId;
         Anime anime = animeResponseWithCommentCount.anime;
         this.anime_id   = Integer.valueOf(anime.shikiId);
@@ -330,11 +336,20 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
            public void run() {
                Picasso.with(context).load(RequestOptions.SecondHost+anime.images[0].original).into(poster);
                name_rus_tv.setText(anime.nameRus);
-               description_tv.setText(anime.description);
+               if (anime.description != null && !anime.description.isEmpty()){
+                   description_tv.setText(anime.description);
+               }
+               else{
+                   description_tv.setText("Упс, пусто!");
+                   _showTextViewBtn.setVisibility(View.GONE);
+               }
                score_tv.setText(String.valueOf(anime.scoreShiki)+"/10");
                nameEnglishTextView.setText(anime.nameEng);
-               String aniScore = average(anime.animeRates) + "/5";
-               anigoScore.setText(aniScore);
+               String aniScore = String.valueOf(average(anime.animeRates));
+               if(!aniScore.toLowerCase(Locale.ROOT).contains("nan")){
+                   animeRate = aniScore ;
+               }
+               anigoScore.setText(animeRate + "/5");
                ratesCount.setText(anime.animeRates.length + " оценок");
                nameJapaneseTextView.setText(anime.japaneses[0].name);
                type_tv.setText(AnimeTypeOrganizer.Organizer(anime.type.name));
@@ -348,6 +363,9 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
                    String year  = String.valueOf(calendar.get(Calendar.YEAR));
                    String month = GetDate(calendar.get(Calendar.MONTH));
                    date_tv.setText(String.format("%s, %s г.", month.toLowerCase(Locale.ROOT), year));
+               }
+               else {
+                   date_tv.setText("Неизвестно");
                }
                for(Genre genre : anime.genres){
                    genres_layout.addView(
@@ -450,6 +468,12 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                if(screenshots.length < 1)
+                {
+                    screensTextView.setVisibility(View.GONE);
+                    screenshots_layout.setVisibility(View.GONE);
+                    return;
+                }
                 for(Screenshot screen : screenshots){
                     screenshots_layout.addView(ImageBitmapHelper.CreateNewCardViewTemplate(
                             RequestOptions.SecondHost + screen.image,
@@ -547,6 +571,8 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
             adapterAnimes.setOnItemClickListener(new AnimeFrAdapter.OnItemClickListener() {
                 @Override
                 public void OnClick(int position) {
+
+
                     Intent to_anime = new Intent(context, AnimeActivity.class);
                     Bundle bundle = new Bundle();
                     int id = newArray[position].shikiId;
@@ -559,11 +585,23 @@ public class AnimeActivity extends AppCompatActivity  implements  AnimeActivityC
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    if(animes.length<1){
+
+                    }
                     gridViewAnimesFr.setLayoutManager(new LinearLayoutManager(context,LinearLayoutManager.VERTICAL,true));
                     gridViewAnimesFr.setAdapter(adapterAnimes);
 
                 }
             });
+        }else{
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    gridViewAnimesFr.setVisibility(View.GONE);
+                    franchizeTextView.setVisibility(View.GONE);
+                }
+            });
+
         }
 
 

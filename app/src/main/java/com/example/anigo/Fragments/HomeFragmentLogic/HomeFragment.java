@@ -132,6 +132,11 @@ public class HomeFragment extends Fragment implements HomeFragmentContract.View{
             }
         });
 
+        if(NavigationActivity.animes_pagination_popular.size() < 1){
+            swp.setRefreshing(true);
+            presenter.GetFavs(filterObject);
+        }
+
         grid_adapter = new GridAdapter(context, NavigationActivity.animes_pagination_popular);
         grd_animes.setAdapter(grid_adapter);
         if(state != null){
@@ -139,10 +144,7 @@ public class HomeFragment extends Fragment implements HomeFragmentContract.View{
             return current_view;
         }
 
-        if(NavigationActivity.animes_pagination_popular.size() < 1){
-            swp.setRefreshing(true);
-            presenter.GetFavs(filterObject);
-        }
+
 
         return current_view;
     }

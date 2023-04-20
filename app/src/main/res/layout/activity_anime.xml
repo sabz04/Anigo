@@ -383,6 +383,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:fontFamily="@font/roboto_regular"
+                        android:id="@+id/screensTextView"
                         android:text="Скриншоты"
                         android:textStyle="bold"
                         android:textColor="@color/nicered"
@@ -463,7 +464,7 @@
 android:layout_marginBottom="5dp"
                     android:orientation="vertical">
                     <TextView
-
+                        android:id="@+id/franchizeTextView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="17dp"

@@ -9,7 +9,7 @@ import java.net.URL;
 
 public class RequestOptions {
     public static String MainHost = "http://192.168.0.102:81";
-    public static String SecondHost = "https://kawai.shikimori.one";
+    public static String SecondHost = "https://kawai.shikimori.me";
     public static String request_url_login              = MainHost + "/api/Login";
     public static String request_url_register           = MainHost + "/api/Login/Register";
     public static String request_url_animes_get         = MainHost + "/api/Anime/GetAnimes";
