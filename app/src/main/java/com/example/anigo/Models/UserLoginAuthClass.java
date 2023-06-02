@@ -1,4 +1,4 @@
-package com.example.anigo.Activities.MainActivityLogic;
+package com.example.anigo.Models;
 
 public class UserLoginAuthClass {
 

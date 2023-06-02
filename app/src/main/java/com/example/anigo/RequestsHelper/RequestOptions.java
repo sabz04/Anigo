@@ -37,21 +37,4 @@ public class RequestOptions {
     public static String request_url_get_history = MainHost + "/api/User/GetHistory?userId=%d";
     public static String request_url_add_history = MainHost + "/api/User/AddHistory?userId=%d&animeId=%d";
     public static String request_url_get_studios = MainHost + "/api/Anime/GetStudiosPagination?page=%d";
-
-    public static Bitmap downloadImage(String urlStringWithoutHost) {
-        try {
-            String urlString = SecondHost + urlStringWithoutHost;
-            URL url = new URL(urlString);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setDoInput(true);
-            connection.connect();
-            InputStream input = connection.getInputStream();
-            Bitmap bitmap = BitmapFactory.decodeStream(input);
-            input.close();
-            return bitmap;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
 }

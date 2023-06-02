@@ -1,13 +1,12 @@
 package com.example.anigo.AuthentificationLogic;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.example.anigo.InnerDatabaseLogic.FeedUserDbHelper;
 import com.example.anigo.InnerDatabaseLogic.FeedUserLocal;
 import com.example.anigo.Models.UserResponse;
 import com.example.anigo.RequestsHelper.RequestOptions;
-import com.example.anigo.Activities.MainActivityLogic.UserLoginAuthClass;
+import com.example.anigo.Models.UserLoginAuthClass;
 import com.google.gson.Gson;
 
 import java.io.IOException;

@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.example.anigo.InnerDatabaseLogic.FeedUserDbHelper;
 import com.example.anigo.InnerDatabaseLogic.FeedUserLocal;
+import com.example.anigo.Models.UserLoginAuthClass;
 import com.example.anigo.RequestsHelper.RequestOptions;
 import com.google.gson.Gson;
 
