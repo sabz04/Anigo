@@ -74,6 +74,11 @@ public class MainActivityPresenter implements MainActivityContract.Presenter{
                         Log.d("LOCAL_DATABASE", "hehe, yes! he is actually added to inner database");
                     }
                     else {
+                        db_helper.Delete();
+                        db_helper.Delete();
+                        db_helper.Delete();
+                        db_helper.Delete();
+                        db_helper.Create(login, password, json_body);
                         Log.d("LOCAL_DATABASE ", "USER is already here");
                     }
                     FeedUserLocal user_Local = db_helper.CheckIfExist();

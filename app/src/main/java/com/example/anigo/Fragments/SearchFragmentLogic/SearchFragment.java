@@ -98,7 +98,7 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
         if(savedInstanceState != null){
 
 
-            filterObject = savedInstanceState.getParcelable("filters");
+            filterObject = (FilterObject) savedInstanceState.getSerializable("filters");
 
             page_count = savedInstanceState.getInt("page_count");
             search_text = savedInstanceState.getString("editText_search");
@@ -127,8 +127,11 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
         current_view = inflater.inflate(R.layout.fragment_search, container, false);
         context = getContext();
         client = new OkHttpClient();
-        filterObject = new FilterObject();
-        filterObject.Page = 1;
+        if(filterObject == null){
+            filterObject = new FilterObject();
+            filterObject.Page = 1;
+        }
+
         presenter = new SearchFragmentPresenter(this,context);
 
         grd = current_view.findViewById(R.id.gridView);
@@ -142,6 +145,11 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
                 CreateNewFilterDialog();
             }
         });
+        if(state == null){
+            swp.setRefreshing(true);
+            presenter.Search(filterObject, context);;
+        }
+
 
 
 
@@ -207,6 +215,7 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
             public void onRefresh() {
                 ClearPaginationConfig();
                 swp.setRefreshing(true);
+
                 filterObject.Search = editText_search.getText().toString();
                 presenter.Search(filterObject, getContext());
             }
@@ -460,20 +469,12 @@ public class SearchFragment extends Fragment implements SearchFragmentContract.V
         this.page_count = pagecount;
         this.filterObject.Page = currentpage;
 
-        if (currentpage > pagecount){
-            swp.setRefreshing(false);
-            _setGridAdapter(NavigationActivity.animes_pagination, false);
-            return;
-        }
-
         for (Anime item:animes) {
             NavigationActivity.animes_pagination.add(item);
         }
-        if(getActivity() == null){
-            swp.setRefreshing(false);
-            return;
-        }
+
         _setGridAdapter(NavigationActivity.animes_pagination, false);
+        swp.setRefreshing(false);
     }
 
     @Override

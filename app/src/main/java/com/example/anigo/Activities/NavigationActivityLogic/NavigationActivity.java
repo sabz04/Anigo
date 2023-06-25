@@ -41,6 +41,8 @@ public class NavigationActivity extends AppCompatActivity {
 
     public static ArrayList<Anime> animes_pagination_popular = new ArrayList<>();
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

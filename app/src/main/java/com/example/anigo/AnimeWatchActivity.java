@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.webkit.CookieManager;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
@@ -30,6 +31,8 @@ import okhttp3.Response;
 
 public class AnimeWatchActivity extends AppCompatActivity {
 
+    Bundle webViewState;
+
     WebView watchWebView;
 
     OkHttpClient client;
@@ -49,7 +52,11 @@ public class AnimeWatchActivity extends AppCompatActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         client = new OkHttpClient();
         watchWebView = findViewById(R.id.watchWebView);
-        watchWebView.saveState(savedInstanceState);
+
+        if(savedInstanceState != null){
+            watchWebView.restoreState(savedInstanceState.getBundle("web"));
+            return;
+        }
         watchWebView.getSettings().setJavaScriptEnabled(true);
         watchWebView.getSettings().setAllowContentAccess(true);
         watchWebView.getSettings().setAllowFileAccess(true);
@@ -87,6 +94,8 @@ public class AnimeWatchActivity extends AppCompatActivity {
             }
         };
         watchWebView.setWebChromeClient(webChromeClient);
+        CookieManager cookieManager = CookieManager.getInstance();
+        cookieManager.setAcceptCookie(true);
         Request request = new Request.Builder()
                 .url(String.format(RequestOptions.request_url_kodik_watch_anime, token, id))
                 .get()
@@ -137,13 +146,23 @@ public class AnimeWatchActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
 
         // Сохраните состояние WebView
-        watchWebView.saveState(outState);
+        Bundle webViewBundle = new Bundle();
+        watchWebView.saveState(webViewBundle);
+        outState.putBundle("web", webViewBundle);
     }
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
 
         // Восстановите состояние WebView
-        watchWebView.restoreState(savedInstanceState);
+        webViewState = savedInstanceState.getBundle("web");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(webViewState != null){
+            watchWebView.restoreState(webViewState);
+        }
     }
 }

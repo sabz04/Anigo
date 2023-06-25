@@ -172,18 +172,13 @@ public class FragmentLiked extends Fragment implements FragmentLikedContract.Vie
     public void OnSuccess(Favourite[] favourites, int current_page, int page_count) {
         this.current_page = current_page;
         this.page_count = page_count;
-        if(current_page > page_count){
-            swp.setRefreshing(false);
-            return;
-        }
+
         for(Favourite fav : favourites){
                 NavigationActivity.favourites_pagination.add(fav);
         }
-        if(getActivity() == null){
-            swp.setRefreshing(false);
-            return;
-        }
+
        _setGridAdapter(NavigationActivity.favourites_pagination);
+        swp.setRefreshing(false);
     }
 
     @Override

@@ -9,6 +9,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Parcelable;
 import android.util.Log;
 import android.view.View;
@@ -144,20 +145,15 @@ public class CommentsActivity extends AppCompatActivity implements CommentsActiv
             @Override
             public void onClick(View view) {
                 String commentText = commentEditText.getText().toString();
+                String endStr = commentText.trim();
+                if(endStr.isEmpty()){
+                    Toast.makeText(context, "Пустая строка..", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 addCommentPresenter.AddComment(commentText, animeId);
             }
         });
-        /*swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                lastVisiblePosition = -1;
-                swipeRefreshLayout.setRefreshing(true);
-                NavigationActivity.CommentsPagination.clear();
-                currentPage = 1;
-                recyclerViewAdapter = null;
-                presenter.GetComments(currentPage, animeId);
-            }
-        });*/
+
         commentsRecycler.setOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
@@ -284,6 +280,20 @@ public class CommentsActivity extends AppCompatActivity implements CommentsActiv
                 recyclerViewAdapter = null;
                 NavigationActivity.CommentsPagination.clear();
                 presenter.GetComments(currentPage,animeId, sortKey);
+                addCommentButton.setEnabled(false);
+                addCommentButton.setBackground(getResources().getDrawable(R.drawable.baseline_schedule_send_24)); // Устанавливаем новый drawable для неактивной кнопки
+
+
+                new CountDownTimer(60 * 1000, 1000) { // 5 минут в миллисекундах, 1000 миллисекунд (1 секунда) интервал
+                    public void onTick(long millisUntilFinished) {
+                        // Ничего не делаем на промежуточных тиках, если нужно, можно обновить интерфейс
+                    }
+
+                    public void onFinish() {
+                        addCommentButton.setBackground(getResources().getDrawable(R.drawable.ic_baseline_send_24)); // Устанавливаем новый drawable для неактивной кнопки
+                        addCommentButton.setEnabled(true); // Включаем кнопку по истечении таймера
+                    }
+                }.start();
             }
         });
 
@@ -291,7 +301,12 @@ public class CommentsActivity extends AppCompatActivity implements CommentsActiv
 
     @Override
     public void OnErrorAddComment(String message) {
-
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override
